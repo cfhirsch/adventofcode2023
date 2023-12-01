@@ -1,12 +1,19 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace AdventOfCode2023.PuzzleSolver
 {
-    internal class PuzzleSolverFactory
+    internal static class PuzzleSolverFactory
     {
+        public static IPuzzleSolver GetPuzzleSolver(int day)
+        {
+            switch (day)
+            {
+                case 1:
+                    return new Day1PuzzleSolver();
+
+                default:
+                    throw new ArgumentException($"Unsupported day {day}.");
+            }
+        }
     }
 }
