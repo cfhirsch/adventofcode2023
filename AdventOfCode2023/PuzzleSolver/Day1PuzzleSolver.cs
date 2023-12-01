@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using AdventOfCode2023.Utilities;
-using Microsoft.SqlServer.Server;
 
 namespace AdventOfCode2023.PuzzleSolver
 {
