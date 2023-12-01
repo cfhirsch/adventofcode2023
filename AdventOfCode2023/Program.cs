@@ -9,9 +9,34 @@ namespace AdventOfCode2023
         {
             for (int i = 1; i <= 1; i++)
             {
-                IPuzzleSolver solver = PuzzleSolverFactory.GetPuzzleSolver(i);
-                string part1Solution = solver.SolvePartOne(false);
-                Console.WriteLine($"Solution to Day {i}, Part One: {part1Solution}.");
+                try
+                {
+                    IPuzzleSolver solver = PuzzleSolverFactory.GetPuzzleSolver(i);
+
+                    try
+                    {
+                        string part1Solution = solver.SolvePartOne(test: false);
+                        Console.WriteLine($"Solution to Day {i}, Part One: {part1Solution}.");
+                    }
+                    catch (NotImplementedException)
+                    {
+                        Console.WriteLine($"Solver not implemented for day {i}, part one.");
+                    }
+
+                    try
+                    {
+                        string part2Solution = solver.SolvePartTwo(test: false);
+                        Console.WriteLine($"Solution to Day {i}, Part Two: {part2Solution}.");
+                    }
+                    catch (NotImplementedException)
+                    {
+                        Console.WriteLine($"Solver not implemented for day {i}, part day.");
+                    }
+                }
+                catch (ArgumentException)
+                {
+                    Console.WriteLine($"Puzzle solver not implemented for day {i}.");
+                }
             }
 
             Console.ReadLine();
