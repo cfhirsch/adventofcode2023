@@ -23,3 +23,9 @@ whether (i) we are building up a digit and (ii) whether the digit we're building
 -- Part Two:
 This time, as I scanned through the lines, I needed to keep track of when there was a neighboring gear. When I was finished parsing 
 a number, I updated a dictionary whose keys were gear coordinates and whose values were lists of neighboring numbers.
+
+- Dec 4
+
+-- Part One:
+Straightforward. Read in each line of input, trim off "Card <card number>:", split into two strings, first containing winning numbers, second the card numbers.
+Then, parse each of these strings into two lists of numbers, count the matches.
