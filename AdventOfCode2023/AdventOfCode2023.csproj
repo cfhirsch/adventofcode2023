@@ -48,6 +48,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="PuzzleSolver\Day1PuzzleSolver.cs" />
     <Compile Include="PuzzleSolver\Day2PuzzleSolver.cs" />
+    <Compile Include="PuzzleSolver\Day3PuzzleSolver.cs" />
     <Compile Include="PuzzleSolver\IPuzzleSolver.cs" />
     <Compile Include="PuzzleSolver\PuzzleSolverFactory.cs" />
     <Compile Include="Utilities\PuzzleReader.cs" />

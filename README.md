@@ -13,3 +13,8 @@ overlap between digit words. For example, "twone" contains 2 AND 1 and both digi
 
 Solving both parts was straightforward; split each line into the list of samples, use a regex to determine number and color of blocks,
 then apply whatever logic was applicable to each part.
+
+- Dec 3 (Part One only)
+
+A little more involved than the previous two days. I loaded the input into a char array, then walked through line by line. Booleans keep track of 
+whether (i) we are building up a digit and (ii) whether the digit we're building is next to a symbol. 
