@@ -65,7 +65,70 @@ namespace AdventOfCode2023.PuzzleSolver
 
         public string SolvePartTwo(bool test = false)
         {
-            throw new NotImplementedException();
+            char[,] schematic = ParseInput(test);
+            int length = schematic.GetLength(0);
+            int height = schematic.GetLength(1);
+
+            var digit = false;
+            var gears = new Dictionary<Tuple<int, int>, List<int>>();
+            var sb = new StringBuilder();
+            var adjacentGears = new HashSet<Tuple<int, int>>();
+            long sum = 0;
+            for (int x = 0; x < length; x++)
+            {
+                for (int y = 0; y < height; y++)
+                {
+                    if (char.IsDigit(schematic[x, y]))
+                    {
+                        if (!digit)
+                        {
+                            digit = true;
+                            sb = new StringBuilder();
+                        }
+
+                        sb.Append(schematic[x, y]);
+
+                        foreach (Tuple<int, int> neighbor in GetNeighbors(x, y, length, height))
+                        {
+                            char symbol = schematic[neighbor.Item1, neighbor.Item2];
+                            if (symbol == '*')
+                            {
+                                if (!gears.ContainsKey(neighbor))
+                                {
+                                    gears.Add(neighbor, new List<int>());
+                                }
+
+                                adjacentGears.Add(neighbor);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if (digit)
+                        {
+                            digit = false;
+                            int partNumber = Int32.Parse(sb.ToString());
+                            foreach (Tuple<int, int> gear in adjacentGears)
+                            {
+                                gears[gear].Add(partNumber);
+                            }
+
+                            adjacentGears.Clear();
+                        }
+                    }
+                }
+            }
+
+            foreach (KeyValuePair<Tuple<int, int>, List<int>> kvp in gears)
+            {
+                if (kvp.Value.Count == 2)
+                {
+                    sum += kvp.Value[0] * kvp.Value[1];
+                }
+            }
+
+            return sum.ToString();
+
         }
 
         private static char[,] ParseInput(bool test)
