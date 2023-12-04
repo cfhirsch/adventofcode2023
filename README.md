@@ -29,3 +29,7 @@ a number, I updated a dictionary whose keys were gear coordinates and whose valu
 -- Part One:
 Straightforward. Read in each line of input, trim off "Card <card number>:", split into two strings, first containing winning numbers, second the card numbers.
 Then, parse each of these strings into two lists of numbers, count the matches.
+
+-- Part Two:
+In this part I setup a dictionary whose keys are card ids, and whose values are the current numbers of cards with that id. Then I simply iterated through
+the input lines, and updated card counts based on the number of winning numbers. Finally I summed up the card counts to get the answer.
