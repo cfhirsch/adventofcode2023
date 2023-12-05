@@ -33,3 +33,12 @@ Then, parse each of these strings into two lists of numbers, count the matches.
 -- Part Two:
 In this part I setup a dictionary whose keys are card ids, and whose values are the current numbers of cards with that id. Then I simply iterated through
 the input lines, and updated card counts based on the number of winning numbers. Finally I summed up the card counts to get the answer.
+
+- Dec 5
+
+-- Part One:
+Parsing the input was tedious and I'm sure I could have done that part more elegantly. Once that was done though, the process of mapping inputs to outputs
+was straightforward. Specifically, when mapping, say, seed to soil, look for an entry where source_range_start <= seed <= source_range_start + range_length.
+If one exists, then return destination_range_start + seed - source_range_start. Otherwise return seed.
+
+I suppose there might be a "fluid" way to do the sequence of seed -> soil -> .. -> location.
