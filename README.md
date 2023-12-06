@@ -49,3 +49,8 @@ if location equals, say 80, and there are 10 values left in the current range, t
 we're looking for the minimum, we don't need to check those values. So what I did here, to avoid having to loop through every 
 possible seed value, was to calculate how many values were left in the current range for each map, and take the minimum (ignoring maps where there was no range, 
 and we were just returning the passed in value). I then leap forward by that minimum. Glad it worked :).
+
+-- Dec 6
+
+-- Part One:
+Straightforward. For each pair of times and distances, just loop through the resulting distance from holding the button for 0 to time milliseconds.
