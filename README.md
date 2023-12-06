@@ -44,6 +44,8 @@ If one exists, then return destination_range_start + seed - source_range_start. 
 I suppose there might be a "fluid" way to do the sequence of seed -> soil -> .. -> location.
 
 -- Part Two:
-Very pleasantly surprised that I got this in one. Each map is monotonically increasing within its range. So what I did here, to avoid having to loop through every 
+Very pleasantly surprised that I got this in one. Each map is monotonically increasing within its range. So, for example, in the final map from humidity to location,
+if location equals, say 80, and there are 10 values left in the current range, then we know that the next 10 values are going to be greater than 80; since
+we're looking for the minimum, we don't need to check those values. So what I did here, to avoid having to loop through every 
 possible seed value, was to calculate how many values were left in the current range for each map, and take the minimum (ignoring maps where there was no range, 
 and we were just returning the passed in value). I then leap forward by that minimum. Glad it worked :).
