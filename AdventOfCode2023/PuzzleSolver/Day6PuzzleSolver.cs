@@ -39,7 +39,26 @@ namespace AdventOfCode2023.PuzzleSolver
 
         public string SolvePartTwo(bool test = false)
         {
-            throw new NotImplementedException();
+            var lines = PuzzleReader.ReadLines(6, test).ToList();
+            string timeStr = lines[0].Split(':')[1].Trim();
+            long time = Int64.Parse(timeStr.Replace(" ", ""));
+
+            string distanceStr = lines[1].Split(':')[1].Trim();
+            long distance = Int64.Parse(distanceStr.Replace(" ", ""));
+
+            int sum = 0;
+            for (int hold = 0; hold <= time; hold++)
+            {
+                // velocity = hold
+                // distance = (time - hold) * velocity
+                long dist = (time - hold) * hold;
+                if (dist > distance)
+                {
+                    sum++;
+                }
+            }
+
+            return sum.ToString();
         }
     }
 }

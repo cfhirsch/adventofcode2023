@@ -54,3 +54,6 @@ and we were just returning the passed in value). I then leap forward by that min
 
 -- Part One:
 Straightforward. For each pair of times and distances, just loop through the resulting distance from holding the button for 0 to time milliseconds.
+
+-- Part Two:
+Also straightforward. Just removed the spaces between the numbers in each line, parsed to a number, looped through all the possible times to hold the button.
