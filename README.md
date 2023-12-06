@@ -42,3 +42,8 @@ was straightforward. Specifically, when mapping, say, seed to soil, look for an 
 If one exists, then return destination_range_start + seed - source_range_start. Otherwise return seed.
 
 I suppose there might be a "fluid" way to do the sequence of seed -> soil -> .. -> location.
+
+-- Part Two:
+Very pleasantly surprised that I got this in one. Each map is monotonically increasing within its range. So what I did here, to avoid having to loop through every 
+possible seed value, was to calculate how many values were left in the current range for each map, and take the minimum (ignoring maps where there was no range, 
+and we were just returning the passed in value). I then leap forward by that minimum. Glad it worked :).

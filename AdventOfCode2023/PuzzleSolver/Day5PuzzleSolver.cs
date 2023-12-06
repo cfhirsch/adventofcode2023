@@ -11,9 +11,18 @@ namespace AdventOfCode2023.PuzzleSolver
     {
         public string SolvePartOne(bool test = false)
         {
+            return Solve(test, isPartTwo: false);
+        }
+
+        public string SolvePartTwo(bool test = false)
+        {
+            return Solve(test, isPartTwo: true);
+        }
+
+        private static string Solve(bool test = false, bool isPartTwo = false)
+        {
             var seedToSoil = new Dictionary<int, int>();
-            var parseState = ParseState.Seeds;
-            var seeds = new HashSet<long>();
+            var seeds = new List<long>();
             Map seedToSoilMap = new Map();
             Map soilToFertilizerMap = new Map();
             Map fertilizerToWaterMap = new Map();
@@ -31,7 +40,7 @@ namespace AdventOfCode2023.PuzzleSolver
                 if (current.StartsWith("seeds: "))
                 {
                     string seedStr = current.Substring("seeds: ".Length);
-                    seeds = seedStr.Split(' ').Select(x => Int64.Parse(x)).ToHashSet();
+                    seeds = seedStr.Split(' ').Select(x => Int64.Parse(x)).ToList();
                     line++;
                     continue;
                 }
@@ -174,34 +183,87 @@ namespace AdventOfCode2023.PuzzleSolver
             }
 
             long minLocation = Int64.MaxValue;
-            foreach (long seed in seeds)
+            if (isPartTwo)
             {
-                long soil = seedToSoilMap.GetMapValue(seed);
-
-                long fertilizer = soilToFertilizerMap.GetMapValue(soil);
-
-                long water = fertilizerToWaterMap.GetMapValue(fertilizer);
-
-                long light = waterToLightMap.GetMapValue(water);
-
-                long temperature = lightToTemperatureMap.GetMapValue(light);
-
-                long humidity = temperatureToHumidityMap.GetMapValue(temperature);
-
-                long location = humidityToLocationMap.GetMapValue(humidity);
-
-                if (location < minLocation)
+                for (int i = 0; i < seeds.Count - 1; i+=2)
                 {
-                    minLocation = location;
+                    long seedNum = seeds[i];
+                    long seedRange = seeds[i + 1];
+
+                    long j = 0;
+                    while (j < seedRange)
+                    {
+                        long currentSeed = seedNum + j;
+                        (long soil, long soilRange) = seedToSoilMap.GetMapValuePartTwo(currentSeed);
+
+                        (long fertilizer, long fertRange) = soilToFertilizerMap.GetMapValuePartTwo(soil);
+
+                        (long water, long waterRange) = fertilizerToWaterMap.GetMapValuePartTwo(fertilizer);
+
+                        (long light, long lightRange) = waterToLightMap.GetMapValuePartTwo(water);
+
+                        (long temperature, long tempRange) = lightToTemperatureMap.GetMapValuePartTwo(light);
+
+                        (long humidity, long humRange) = temperatureToHumidityMap.GetMapValuePartTwo(temperature);
+
+                        (long location, long locRange) = humidityToLocationMap.GetMapValuePartTwo(humidity);
+
+                        if (location < minLocation)
+                        {
+                            minLocation = location;
+                        }
+
+                        long minRange = Min(soilRange, fertRange, waterRange, lightRange, tempRange, humRange, locRange);
+
+                        if (minRange == Int64.MaxValue)
+                        {
+                            throw new ApplicationException("oops");
+                        }
+
+                        j += minRange;
+                    }
+                }
+            }
+            else
+            {
+                foreach (long seed in seeds)
+                {
+                    long soil = seedToSoilMap.GetMapValue(seed);
+
+                    long fertilizer = soilToFertilizerMap.GetMapValue(soil);
+
+                    long water = fertilizerToWaterMap.GetMapValue(fertilizer);
+
+                    long light = waterToLightMap.GetMapValue(water);
+
+                    long temperature = lightToTemperatureMap.GetMapValue(light);
+
+                    long humidity = temperatureToHumidityMap.GetMapValue(temperature);
+
+                    long location = humidityToLocationMap.GetMapValue(humidity);
+
+                    if (location < minLocation)
+                    {
+                        minLocation = location;
+                    }
                 }
             }
 
             return minLocation.ToString();
         }
 
-        public string SolvePartTwo(bool test = false)
+        private static long Min(params long[] vals)
         {
-            throw new NotImplementedException();
+            long min = Int64.MaxValue;
+            foreach (long val in vals)
+            {
+                if (val > 0 && val < min)
+                {
+                    min = val;
+                }
+            }
+
+            return min;
         }
 
         private class Map
@@ -224,6 +286,22 @@ namespace AdventOfCode2023.PuzzleSolver
                 }
 
                 return val;
+            }
+
+            public Tuple<long, long> GetMapValuePartTwo(long val)
+            {
+                var entry = this.MapEntries.FirstOrDefault(
+                    m => val >= m.SourceRangeStart && val < m.SourceRangeStart + m.RangeLength);
+
+                if (entry != null)
+                {
+                    long diff = val - entry.SourceRangeStart;
+                    return new Tuple<long, long>(
+                        entry.DestinationRangeStart + diff,
+                        entry.RangeLength - diff);
+                }
+
+                return new Tuple<long, long>(val, 0);
             }
         }
 
