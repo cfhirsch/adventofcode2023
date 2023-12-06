@@ -313,17 +313,5 @@ namespace AdventOfCode2023.PuzzleSolver
 
             public long RangeLength { get; set; }
         }
-
-        private enum ParseState
-        {
-            Seeds,
-            SeedToSoil,
-            SoilToFertilizer,
-            FertilizerToWater,
-            WaterToLight,
-            LightToTemperature,
-            TemperatureToHumidity,
-            HumidityToLocation
-        }
     }
 }
