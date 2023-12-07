@@ -57,3 +57,10 @@ Straightforward. For each pair of times and distances, just loop through the res
 
 -- Part Two:
 Also straightforward. Just removed the spaces between the numbers in each line, parsed to a number, looped through all the possible times to hold the button.
+
+-- Dec 7
+
+-- Part One:
+I created a Card class that stores the hand as a char array, and a dictionary that contains aggregated counts by card. The dictionary is used to determine hand type.
+In my first attempt I made a mistake in the code that handles ties in hand type; specifically, I was casting digit chars to the ASCII code and not the digit they 
+represented (d'oh!). Once I fixed that I got the right answer.

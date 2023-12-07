@@ -9,10 +9,7 @@ namespace AdventOfCode2023.PuzzleSolver
     {
         public string SolvePartOne(bool test = false)
         {
-            //var h1 = new Hand("TK8A9", 1);
-            //var h2 = new Hand("TK82A", 2);
-            //int r = h1.CompareTo(h2);
-
+           
             var hands = new List<Hand>();
 
             foreach (string line in PuzzleReader.ReadLines(7, test))
@@ -26,7 +23,6 @@ namespace AdventOfCode2023.PuzzleSolver
             long sum = 0;
             for (int i = 1; i <= hands.Count; i++)
             {
-                Console.WriteLine(hands[i - 1]);
                 sum += i * hands[i - 1].Bid;
             }
 
@@ -56,38 +52,38 @@ namespace AdventOfCode2023.PuzzleSolver
 
         public long Bid { get; }
 
-        public Rank Rank
+        public HandType Rank
         {
             get
             {
                 switch (this.cardCount.Count())
                 {
                     case 1:
-                        return Rank.FiveOfAKind;
+                        return HandType.FiveOfAKind;
 
                     case 2:
                         if (this.cardCount.Any(k => k.Value == 4))
                         {
-                            return Rank.FourOfAKind;
+                            return HandType.FourOfAKind;
                         }
                         else
                         {
-                            return Rank.FullHouse;
+                            return HandType.FullHouse;
                         }
 
                     case 3:
                         if (cardCount.Select(k => k.Value).Max() == 3)
                         {
-                            return Rank.ThreeOfAKind;
+                            return HandType.ThreeOfAKind;
                         }
 
-                        return Rank.TwoPair;
+                        return HandType.TwoPair;
 
                     case 4:
-                        return Rank.OnePair;
+                        return HandType.OnePair;
 
                     default:
-                        return Rank.HighCard;
+                        return HandType.HighCard;
                 }
             }
         }
@@ -157,7 +153,7 @@ namespace AdventOfCode2023.PuzzleSolver
         }
     }
 
-    internal enum Rank
+    internal enum HandType
     {
         None = 0,
         FiveOfAKind = 7,
