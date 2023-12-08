@@ -64,3 +64,28 @@ Also straightforward. Just removed the spaces between the numbers in each line, 
 I created a Card class that stores the hand as a char array, and a dictionary that contains aggregated counts by card. The dictionary is used to determine hand type.
 In my first attempt I made a mistake in the code that handles ties in hand type; specifically, I was casting digit chars to the ASCII code and not the digit they 
 represented (d'oh!). Once I fixed that I got the right answer.
+
+-- Part Two:
+Took me two tries to get this right. To calculate the type of a hand that has Jokers, I calculated:
+
+- The number of Jokers.
+- The number of non-Joker ranks in the hand.
+- The number of cards in the non-Joker rank that has the highest number of cards.	
+
+If there are at least 4 jokers (JJJJX or JJJJJ, where X is any rank other than Joker), then we have five of a kind. 
+
+If we have 3 jokers, then we need to consider two cases. If there is one non-joker rank in the hand, then the hand is of the form JJJ XX (where X is any rank other than J),
+so we have five of a kind. If there are two non-joker types, then the hand is of the form JJJ XY and the best we can do is four of a kind.
+
+If there are 2 jokers, then we have the following cases:
+
+- 1 non-joker type (JJXXX): five of a kind.
+- 2 non-joker types (JJXXY): four of a kind.
+- 3 non-Joker types (JJXYZ): three of a kind.
+
+If there is 1 joker, then we have the following cases:
+
+- 1 non-joker type (JXXXX): five of a kind.
+- 2 non-joker types: Two sub-cases - if the highest numbered non-joker ranked card has 3 cards (JXXXY), then best we can do is four of a kind. Otherwise (JXXYY), Full House.
+- 3 non-joker types (JXXYZ): three of a kind.
+- 4 non-joker types (JXYZW): one pair.

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Permissions;
 using AdventOfCode2023.Utilities;
 
 namespace AdventOfCode2023.PuzzleSolver
@@ -9,13 +10,22 @@ namespace AdventOfCode2023.PuzzleSolver
     {
         public string SolvePartOne(bool test = false)
         {
-           
+            return Solve(test, isPartTwo: false);
+        }
+
+        public string SolvePartTwo(bool test = false)
+        {
+            return Solve(test, isPartTwo: true);
+        }
+
+        private static string Solve(bool test, bool isPartTwo)
+        {
             var hands = new List<Hand>();
 
             foreach (string line in PuzzleReader.ReadLines(7, test))
             {
                 string[] lineParts = line.Split(' ');
-                hands.Add(new Hand(lineParts[0], Int32.Parse(lineParts[1])));
+                hands.Add(new Hand(lineParts[0], Int32.Parse(lineParts[1]), isPartTwo));
             }
 
             hands.Sort();
@@ -23,15 +33,14 @@ namespace AdventOfCode2023.PuzzleSolver
             long sum = 0;
             for (int i = 1; i <= hands.Count; i++)
             {
+                if (isPartTwo)
+                {
+                    Console.WriteLine($"{hands[i - 1]}:{hands[i - 1].HandType}");
+                }
                 sum += i * hands[i - 1].Bid;
             }
 
             return sum.ToString();
-        }
-
-        public string SolvePartTwo(bool test = false)
-        {
-            throw new NotImplementedException();
         }
     }
 
@@ -39,8 +48,9 @@ namespace AdventOfCode2023.PuzzleSolver
     {
         private char[] hand;
         private Dictionary<char, int> cardCount;
+        private bool isPartTwo;
 
-        public Hand(string handStr, long bid)
+        public Hand(string handStr, long bid, bool isPartTwo = false)
         {
             this.hand = handStr.ToCharArray();
             this.cardCount =
@@ -48,14 +58,96 @@ namespace AdventOfCode2023.PuzzleSolver
                 (x => x.Key, x => x.Count());
 
             this.Bid = bid;
+            this.isPartTwo = isPartTwo;
         }
 
         public long Bid { get; }
 
-        public HandType Rank
+        public HandType HandType
         {
             get
             {
+                if (isPartTwo && this.cardCount.ContainsKey('J'))
+                {
+                    int jokerCount = this.cardCount['J'];
+
+                    // Number of ranks in the hand that are not 'J'.
+                    var nonJokerRanks = this.cardCount.Where(x => x.Key != 'J');
+
+                    int numNonJokerRanks = nonJokerRanks.Count();
+
+                    // The max number of cards for a rank that is not a Joker.
+                    int maxNonJoker = 0;
+
+                    if (nonJokerRanks.Any())
+                    {
+                        maxNonJoker = nonJokerRanks.OrderByDescending(x => x.Value).First().Value;
+                    }
+
+                    switch (jokerCount)
+                    {
+                        case 5:
+                        case 4:
+                            // We either have all jokers, or 4 jokers and one other card.
+                            return HandType.FiveOfAKind;
+
+                        case 3:
+                            // We either have JJJXX or JJJXY. 
+                            // In the former we can get five of a kind, in the latter four of a kind.
+                            return numNonJokerRanks == 1 ? HandType.FiveOfAKind : HandType.FourOfAKind;
+
+                        case 2:
+                            switch (numNonJokerRanks)
+                            {
+                                case 1:
+                                    // JJXXX
+                                    return HandType.FiveOfAKind;
+
+                                case 2:
+                                    // JJXXY
+                                    return HandType.FourOfAKind;
+
+                                case 3:
+                                    // JJXYZ
+                                    return HandType.ThreeOfAKind;
+
+                                default:
+                                    throw new ArgumentException($"Unexpected number of non-joker ranks {numNonJokerRanks}.");
+                            }
+
+                        case 1:
+                            switch (numNonJokerRanks)
+                            {
+                                case 1:
+                                    // JXXXX
+                                    return HandType.FiveOfAKind;
+
+                                case 2:
+                                    if (maxNonJoker == 3)
+                                    {
+                                        // JXXXY
+                                        return HandType.FourOfAKind;
+                                    }
+                                    else
+                                    {
+                                        // JXXYY
+                                        return HandType.FullHouse;
+                                    }
+
+                                case 3:
+                                    // JXXYZ
+                                    return HandType.ThreeOfAKind;
+
+                                case 4:
+                                    // JXYZW
+                                    return HandType.OnePair;
+
+                                default:
+                                    throw new ArgumentException($"Unexpected number of non-joker ranks {numNonJokerRanks}.");
+                            }
+                    }
+                }
+                    
                 switch (this.cardCount.Count())
                 {
                     case 1:
@@ -90,12 +182,12 @@ namespace AdventOfCode2023.PuzzleSolver
 
         public int CompareTo(Hand other)
         {
-            if (this.Rank < other.Rank)
+            if (this.HandType < other.HandType)
             {
                 return -1;
             }
 
-            if (this.Rank > other.Rank)
+            if (this.HandType > other.HandType)
             {
                 return 1;
             }
@@ -115,15 +207,15 @@ namespace AdventOfCode2023.PuzzleSolver
 
         public override string ToString()
         {
-            return $"{string.Join("", this.hand)}, {this.Rank}";
+            return $"{string.Join("", this.hand)}";
         }
 
-        private static int CompareCards(char card1, char card2)
+        private int CompareCards(char card1, char card2)
         {
             return CardToInt(card1).CompareTo(CardToInt(card2));
         }
 
-        private static int CardToInt(char ch)
+        private int CardToInt(char ch)
         {
             if (char.IsDigit(ch))
             {
@@ -136,7 +228,7 @@ namespace AdventOfCode2023.PuzzleSolver
                     return 10;
 
                 case 'J':
-                    return 11;
+                    return this.isPartTwo ? 1 : 11;
 
                 case 'Q':
                     return 12;
