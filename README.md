@@ -94,3 +94,8 @@ If there is 1 joker, then we have the following cases:
 
 ### Part One:
 Easy. Just parsed the input and followed the instructions.
+
+### Part Two:
+A little more involved. Brute force won't work here (or atleast will take too long :)). Suppose there are n starting nodes, and let S_i, 1 <= i <= n be the ith 
+starting node. We need to calculate P_i, 1 <= i <= n, where P_i is the number of steps it takes to get from S_i to a node that ends with "Z". The answer is then
+LCM(P_1, P_2, ..., P_n), the least common multiple of the P_i's. I had to crib an algorithm for computing the LCD from the internet.

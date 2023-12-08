@@ -86,37 +86,67 @@ namespace AdventOfCode2023.PuzzleSolver
             }
 
             string[] current = map.Where(x => x.Key.EndsWith("A")).Select(x => x.Key).ToArray();
+            var periods = new int[current.Length];
             int numSteps = 0;
             int pos = 0;
             int zCount = 0;
-            while (zCount < current.Length)
+            while (zCount < periods.Length)
             {
-                switch (directions[pos])
+                numSteps++;
+                for (int i = 0; i < current.Length; i++)
                 {
-                    case 'L':
-                        for (int i = 0; i < current.Length; i++)
-                        {
+                    switch (directions[pos])
+                    {
+                        case 'L':
                             current[i] = map[current[i]].Item1;
-                        }
+                            break;
 
-                        break;
-
-                    case 'R':
-                        for (int i = 0; i < current.Length; i++)
-                        {
+                        case 'R':
                             current[i] = map[current[i]].Item2;
-                        }
+                            break;
+                    }
 
-                        break;
+                    if (current[i].EndsWith("Z") && periods[i] == 0)
+                    {
+                        periods[i] = numSteps;
+                    }
                 }
 
-                numSteps++;
-
                 pos = (pos + 1) % directions.Length;
-                zCount = current.Count(x => x.EndsWith("Z"));
+                zCount = periods.Count(x => x > 0);
             }
 
-            return numSteps.ToString();
+            long result = periods.Aggregate(1L, (lcm, x) => Lcm(lcm, x));
+            return result.ToString();
+        }
+
+        // The following two methods were adopted from
+        // https://www.programming-algorithms.net/article/42865/Least-common-multiple
+        private static long Lcm(long a, long b)
+        {
+            if (a == 0 || b == 0)
+            { 
+                return 0;
+            }
+
+            return (a * b) / Gcd(a, b);
+        }
+
+        public static long Gcd(long a, long b)
+        {
+            if (a < 1 || b < 1)
+            {
+                throw new ArgumentException("a or b is less than 1");
+            }
+
+            do
+            {
+                long remainder = a % b;
+                a = b;
+                b = remainder;
+            } while (b != 0);
+
+            return a;
         }
     }
 }
