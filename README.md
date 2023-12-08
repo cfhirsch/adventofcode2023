@@ -1,6 +1,6 @@
 # adventofcode2023
 
-Days that have been solved so far (both parts are solved unless otherwise specified).
+Days that have been solved so far (both parts are solved unless otherwise specified). The code for each day's solutions is in the PuzzleSolver folder.
 
 ## Dec 1
 
