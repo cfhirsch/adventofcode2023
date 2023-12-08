@@ -86,6 +86,6 @@ If there are 2 jokers, then we have the following cases:
 If there is 1 joker, then we have the following cases:
 
 - 1 non-joker type (JXXXX): five of a kind.
-- 2 non-joker types: Two sub-cases - if the highest numbered non-joker ranked card has 3 cards (JXXXY), then best we can do is four of a kind. Otherwise (JXXYY), Full House.
+- 2 non-joker types: Two sub-cases - if the highest number of a non-joker ranked card is 3 (JXXXY), then best we can do is four of a kind. Otherwise (JXXYY), Full House.
 - 3 non-joker types (JXXYZ): three of a kind.
 - 4 non-joker types (JXYZW): one pair.
