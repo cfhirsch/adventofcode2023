@@ -50,7 +50,43 @@ namespace AdventOfCode2023.PuzzleSolver
 
         public string SolvePartTwo(bool test = false)
         {
-            throw new NotImplementedException();
+            var sequences = new List<List<int>>();
+            foreach (string line in PuzzleReader.ReadLines(9, test))
+            {
+                sequences.Add(line.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries).Select
+                    (x => Int32.Parse(x)).ToList());
+            }
+
+            long sum = 0;
+            foreach (List<int> sequence in sequences)
+            {
+                var differences = new List<List<int>>();
+                bool allZeroes = false;
+                List<int> current = sequence;
+                differences.Add(current);
+                while (!allZeroes)
+                {
+                    var diffs = new List<int>();
+                    for (int i = 1; i < current.Count; i++)
+                    {
+                        diffs.Add(current[i] - current[i - 1]);
+                    }
+
+                    differences.Add(diffs);
+                    current = diffs;
+
+                    allZeroes = diffs.All(x => x == 0);
+                }
+
+                for (int i = differences.Count - 2; i >= 0; i--)
+                {
+                    differences[i].Insert(0, differences[i].First() - differences[i + 1].First());
+                }
+
+                sum += sequence.First();
+            }
+
+            return sum.ToString();
         }
     }
 }
