@@ -35,6 +35,9 @@ namespace AdventOfCode2023.PuzzleSolver
                 case 9:
                     return new Day9PuzzleSolver();
 
+                case 10:
+                    return new Day10PuzzlerSolver();
+
                 default:
                     throw new ArgumentException($"Unsupported day {day}.");
             }

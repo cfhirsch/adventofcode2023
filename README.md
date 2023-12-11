@@ -99,3 +99,13 @@ Easy. Just parsed the input and followed the instructions.
 A little more involved. Brute force won't work here (or at least will take too long :)). Suppose there are n starting nodes, and let S_i, 1 <= i <= n be the ith 
 starting node. We need to calculate P_i, 1 <= i <= n, where P_i is the number of steps it takes to get from S_i to a node that ends with "Z". The answer is then
 LCM(P_1, P_2, ..., P_n), the least common multiple of the P_i's. I had to crib an algorithm for computing the LCD from the internet.
+
+## Dec 9
+Both parts were really easy. I'll let the code speak for itself.
+
+## Dec 10
+
+### Part One:
+Writing the code to figure out which tiles were neighbors (i.e. reachable via a pipe) of a current tile was straightforward if slightly tedious. Between the examples
+and my puzzle input, there were only two possible kinds of tiles that the start tile could be; instead of writing a function that could handle all conceivable cases,
+my code only works for the specific instances that I've been given, so very well may not work for all puzzle inputs.

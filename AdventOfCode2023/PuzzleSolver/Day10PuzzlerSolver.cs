@@ -21,7 +21,7 @@ namespace AdventOfCode2023.PuzzleSolver
             while (queue.Count > 0)
             {
                 Tuple<int, int, int> current = queue.Dequeue();
-                visited.Add(new Tuple<int, int>(current.Item1, current.Item2);
+                visited.Add(new Tuple<int, int>(current.Item1, current.Item2));
                 foreach (Tuple<int, int> neighbor in GetNeighbors(map, current.Item1, current.Item2))
                 {
                     if (!visited.Contains(neighbor))
@@ -159,8 +159,7 @@ namespace AdventOfCode2023.PuzzleSolver
             int numRows = map.GetLength(0);
             int numCols = map.GetLength(1);
 
-            if (startX < numRows - 1 && map[startX + 1, startY] == '|' &&
-                startY < numCols - 1 && map[startX, startY + 1] == '-')
+            if (startX < numRows - 1 && map[startX + 1, startY] == '|')
             {
                 return 'F';
             }
