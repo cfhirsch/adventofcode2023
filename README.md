@@ -109,3 +109,15 @@ Both parts were really easy. I'll let the code speak for itself.
 Writing the code to figure out which tiles were neighbors (i.e. reachable via a pipe) of a current tile was straightforward if slightly tedious. Between the examples
 and my puzzle input, there were only two possible kinds of tiles that the start tile could be; instead of writing a function that could handle all conceivable cases,
 my code only works for the specific instances that I've been given, so very well may not work for all puzzle inputs.
+
+### Part Two:
+I'll have to find the time to think about this one a little more.
+
+## Dec 11
+
+### Part One:
+Initially just expanded the initial input array (well, a list of strings) into the expanded "sky", then calculated distance using Metropolitan distance metric.
+
+### Part Two:
+This one forced me to refactor the original code to instead keep track of which rows and columns need to be expanded. Then, to calculate distance,
+iterate from minX to maxX, and from minY to maxY, incrementing by 1 or by the inflation factor, depending on whether the row/column needs to be expanded.
