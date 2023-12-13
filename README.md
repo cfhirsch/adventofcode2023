@@ -124,7 +124,7 @@ iterate from minX to maxX, and from minY to maxY, incrementing by 1 or by the in
 
 ## Dec 12
 
-###Part One:
+### Part One:
 My implementation of this could certainly be more elegant, but I came up with the following formulation of the solution. Here I'll use pseudo-mathy, Haskell-like
 notation.
 
