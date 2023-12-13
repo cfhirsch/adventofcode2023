@@ -121,3 +121,30 @@ Initially just expanded the initial input array (well, a list of strings) into t
 ### Part Two:
 This one forced me to refactor the original code to instead keep track of which rows and columns need to be expanded. Then, to calculate distance,
 iterate from minX to maxX, and from minY to maxY, incrementing by 1 or by the inflation factor, depending on whether the row/column needs to be expanded.
+
+## Dec 12
+
+###Part One:
+My implementation of this could certainly be more elegant, but I came up with the following formulation of the solution. Here I'll use pseudo-mathy, Haskell-like
+notation.
+
+Let C(str, list) be the number of possible arrangements on str, given list. Let's consider edge cases first. We first consider the cases where str is empty:
+
+- C("", []) = 1 (There is 1 way to assign zero groups of broken springs to an empty string.)
+- C("", x:xs) = 0 (There are 0 ways to assign a non-zero number of groups of broken springs to an empty string.)
+
+Now assume str is not empty:
+- C(str, []) = 1 if str does not contain any '#' symbols (we can replace any '?' symbols with '.'), 0 if it does (we're out of groups of broken springs to allocate).
+- C(str, x:xs) = 0 if str does not contain enough '#' and '?' symbols to fit all of the groups in x:xs (I could have been tighter in this constraint, but doing so seemed
+more error prone than it was worth).
+
+We can now come up with the following recursive formulation of the remaining cases:
+
+- C('.' + str, x:xs) = C(str, x:xs) (i.e. if the first character in the string is '.', then all allocations have to happen in the rest of the string).
+- C('#' + str, x:xs) = C(str', xs) if '#' + str is either equal to x instances of '#', or has a prefix of x '#'s, followed by a '?' or '.' (i.e. we can place the first group
+of broken springs at the start of the passed in string; if the following character is '?', we replace it with '.'). Here, str' is either the empty string, or is what is left
+of '#' + str after removing x '#'s and the subsequent character, which must be '.' or '?'.
+- C('#' + str, x:xs) = 0 otherwise (we would have the place the first group of x springs at the start of the string, but we can't, so there are 0 ways to arrange).
+- C('?' + str, x:xs) = C('.' + str, x:xs) + C('#' + str, x:xs)
+
+I added a memoization dictionary as an optimization, too lazy to see what effect that had on performance :).

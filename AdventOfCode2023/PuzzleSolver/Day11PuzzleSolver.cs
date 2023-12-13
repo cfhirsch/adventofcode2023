@@ -88,13 +88,5 @@ namespace AdventOfCode2023.PuzzleSolver
 
             return sum.ToString();
         }
-
-        private static void PrintMap(List<string> map)
-        {
-            foreach (string s in map)
-            {
-                Console.WriteLine(s);
-            }
-        }
     }
 }

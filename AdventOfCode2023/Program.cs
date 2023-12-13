@@ -7,7 +7,7 @@ namespace AdventOfCode2023
     {
         static void Main(string[] args)
         {
-            for (int i = 11; i <= 11; i++)
+            for (int i = 12; i <= 12; i++)
             {
                 try
                 {
