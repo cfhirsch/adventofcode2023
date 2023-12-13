@@ -26,10 +26,29 @@ namespace AdventOfCode2023.PuzzleSolver
 
         public string SolvePartTwo(bool test = false)
         {
-            throw new NotImplementedException();
+            long counts = 0;
+            foreach (string line in PuzzleReader.ReadLines(12, test))
+            {
+                string[] lineParts = line.Split(new[] { ' ' });
+                string row = lineParts[0];
+                row = $"{row}?{row}?{row}?{row}?{row}";
+                List<int> nums = lineParts[1].Split(new[] { ',' }).Select(x => Int32.Parse(x)).ToList();
+
+                var numbers = new List<int>();
+                for (int i = 0; i < 5; i++)
+                {
+                    numbers.AddRange(nums);
+                }
+
+                var memoized = new Dictionary<string, long>();
+                counts += GetNumCombos(row, numbers, memoized);
+            }
+
+            return counts.ToString();
         }
 
-        private static long GetNumCombos(string row, List<int> numbers, Dictionary<string, long> memoized)
+        private static long GetNumCombos(
+            string row, List<int> numbers, Dictionary<string, long> memoized)
         {
             string key = $"{row}:{string.Join(",", numbers.ToArray())}";
             if (memoized.ContainsKey(key))

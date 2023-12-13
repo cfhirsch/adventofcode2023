@@ -148,3 +148,6 @@ of '#' + str after removing x '#'s and the subsequent character, which must be '
 - C('?' + str, x:xs) = C('.' + str, x:xs) + C('#' + str, x:xs)
 
 I added a memoization dictionary as an optimization, too lazy to see what effect that had on performance :).
+
+### Part Two:
+Apparently my approach in Part One was fast enough to efficiently solve Part Two as well :).
