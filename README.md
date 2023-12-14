@@ -167,3 +167,9 @@ Not that difficult. I read each map into a char array. Then I went through each 
 
 ### Part One:
 Straightforward. I read input into a char array and moved any rocks "north" as far as they could go by updated the array in place.
+
+### Part Two:
+A "find the cycle" problem, which is a common pattern in AdventOfCode puzzles. I created a "visited" dictionary whose keys are the current map configuration seralized into a string, and 
+whose values are the cycle at which the given configuration was first encountered. Cycle and add to the visited dictionary until you find a configuration that's been visited before.
+Let cycleStart be the cycle at which the given pattern was first encountered. Let cycleLength = current_cycle_number - cycleStart. Then we only need to 
+cycle another (1000000000 - cycleStart) % cycleLength times to get the answer.

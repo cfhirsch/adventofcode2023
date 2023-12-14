@@ -17,6 +17,7 @@ namespace AdventOfCode2023.Utilities
             }
 
             Console.WriteLine();
+
         }
 
     }
