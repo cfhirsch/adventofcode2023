@@ -49,6 +49,7 @@
     <Compile Include="PuzzleSolver\Day10PuzzlerSolver.cs" />
     <Compile Include="PuzzleSolver\Day11PuzzleSolver.cs" />
     <Compile Include="PuzzleSolver\Day12PuzzleSolver.cs" />
+    <Compile Include="PuzzleSolver\Day13PuzzleSolver.cs" />
     <Compile Include="PuzzleSolver\Day1PuzzleSolver.cs" />
     <Compile Include="PuzzleSolver\Day2PuzzleSolver.cs" />
     <Compile Include="PuzzleSolver\Day3PuzzleSolver.cs" />

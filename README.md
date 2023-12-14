@@ -125,10 +125,10 @@ iterate from minX to maxX, and from minY to maxY, incrementing by 1 or by the in
 ## Dec 12
 
 ### Part One:
-My implementation of this could certainly be more elegant, but I came up with the following formulation of the solution. Here I'll use pseudo-mathy, Haskell-like
+My implementation of this could certainly be more elegant, but I came up with the following recursive formulation of the solution. Here I'll use pseudo-mathy, Haskell-like
 notation.
 
-Let C(str, list) be the number of possible arrangements on str, given list. Let's consider edge cases first. We first consider the cases where str is empty:
+Let C(str, list) be the number of possible arrangements on str, given list. Let's consider base cases first. We first consider the cases where str is empty:
 
 - C("", []) = 1 (There is 1 way to assign zero groups of broken springs to an empty string.)
 - C("", x:xs) = 0 (There are 0 ways to assign a non-zero number of groups of broken springs to an empty string.)
@@ -144,10 +144,15 @@ We can now come up with the following recursive formulation of the remaining cas
 - C('#' + str, x:xs) = C(str', xs) if '#' + str is either equal to x instances of '#', or has a prefix of x '#'s, followed by a '?' or '.' (i.e. we can place the first group
 of broken springs at the start of the passed in string; if the following character is '?', we replace it with '.'). Here, str' is either the empty string, or is what is left
 of '#' + str after removing x '#'s and the subsequent character, which must be '.' or '?'.
-- C('#' + str, x:xs) = 0 otherwise (we would have the place the first group of x springs at the start of the string, but we can't, so there are 0 ways to arrange).
+- C('#' + str, x:xs) = 0 otherwise (we would have to place the first group of x springs at the start of the string, but we can't, so there are 0 ways to arrange).
 - C('?' + str, x:xs) = C('.' + str, x:xs) + C('#' + str, x:xs)
 
 I added a memoization dictionary as an optimization, too lazy to see what effect that had on performance :).
 
 ### Part Two:
 Apparently my approach in Part One was fast enough to efficiently solve Part Two as well :).
+
+## Dec 13
+
+### Part One:
+Not that difficult. I read each map into a char array. Then I went through each column to find potentional pivot points for a reflection, and similarly for each row.
