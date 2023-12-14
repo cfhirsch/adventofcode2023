@@ -33,7 +33,7 @@ namespace AdventOfCode2023.PuzzleSolver
             long sum = 0;
             foreach (char[,] map in ReadMaps(test))
             {
-                PrintMap(map);
+                ConsoleUtilities.PrintMap(map);
 
                 var result = new Tuple<int, Orientation>(-1, Orientation.None);
 
@@ -222,21 +222,6 @@ namespace AdventOfCode2023.PuzzleSolver
             return newMap;
         }
 
-        private static void PrintMap(char[,] map)
-        {
-            for (int i = 0; i < map.GetLength(0); i++)
-            {
-                for (int j = 0; j < map.GetLength(1); j++)
-                {
-                    Console.Write(map[i, j]);
-                }
-
-                Console.WriteLine();
-            }
-
-            Console.WriteLine();
-        }
-
         private static IEnumerable<char[,]> ReadMaps(bool test)
         {
             var lines = PuzzleReader.ReadLines(13, test);
@@ -248,7 +233,7 @@ namespace AdventOfCode2023.PuzzleSolver
                     int numRows = lineList.Count;
                     int numCols = lineList[0].Length;
 
-                    char[,] map = ListToCharArray(lineList);
+                    char[,] map = lineList.ToCharArray();
                     lineList = new List<string>();
                     yield return map;
                 }
@@ -258,25 +243,7 @@ namespace AdventOfCode2023.PuzzleSolver
                 }
             }
 
-            yield return ListToCharArray(lineList);
-        }
-
-        private static char[,] ListToCharArray(List<string> lineList)
-        {
-            int numRows = lineList.Count;
-            int numCols = lineList[0].Length;
-
-            char[,] map = new char[numRows, numCols];
-
-            for (int x = 0; x < numRows; x++)
-            {
-                for (int y = 0; y < numCols; y++)
-                {
-                    map[x, y] = lineList[x][y];
-                }
-            }
-
-            return map;
+            yield return lineList.ToCharArray();
         }
     }
 

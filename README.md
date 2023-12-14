@@ -1,16 +1,22 @@
 # adventofcode2023
 
-Days that have been solved so far (both parts are solved unless otherwise specified). The code for each day's solutions is in the PuzzleSolver folder.
+What follows are some notes about Days and Parts that have been solved so far. If I don't mention part two on a particular day, it means I haven't solved it yet.
+
+The code for each day's solutions is in the PuzzleSolver folder.
 
 ## Dec 1
 
+### Part One:
 Part 1 was a straightforward scan through each input line to look for digits.
 
+### Part Two:
 Solving Part 2 entailed scanning through the line to look for words for digits, in addition to digits. One gotcha was to be mindful of 
 overlap between digit words. For example, "twone" contains 2 AND 1 and both digits need to be added to the list.
 
 ## Dec 2
 
+### Part One:
+### Part Two:
 Solving both parts was straightforward; split each line into the list of samples, use a regex to determine number and color of blocks,
 then apply whatever logic was applicable to each part.
 
@@ -156,3 +162,8 @@ Apparently my approach in Part One was fast enough to efficiently solve Part Two
 
 ### Part One:
 Not that difficult. I read each map into a char array. Then I went through each column to find potentional pivot points for a reflection, and similarly for each row.
+
+## Dec 14
+
+### Part One:
+Straightforward. I read input into a char array and moved any rocks "north" as far as they could go by updated the array in place.
