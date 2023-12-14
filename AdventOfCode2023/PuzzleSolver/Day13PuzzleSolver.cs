@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.SymbolStore;
 using AdventOfCode2023.Utilities;
 
 namespace AdventOfCode2023.PuzzleSolver
@@ -11,20 +12,16 @@ namespace AdventOfCode2023.PuzzleSolver
             long sum = 0;
             foreach (char[,] map in ReadMaps(test))
             {
-                PrintMap(map);
+                int? verticalReflection = FindVerticalReflection(map);
 
-                foreach (int verticalReflection in FindVerticalReflection(map))
+                if (verticalReflection.HasValue)
                 {
-                    Console.WriteLine($"Vertical reflection at {verticalReflection}.");
-                    Console.WriteLine();
-                    sum += verticalReflection;
+                    sum += verticalReflection.Value;
                 }
-                
-                foreach (int horizontalReflection in FindHorizontalReflection(map))
+                else
                 {
-                    Console.WriteLine($"Horizontal reflection at {horizontalReflection}.");
-                    Console.WriteLine();
-                    sum += 100 * horizontalReflection;
+                    int? horizontalReflection = FindHorizontalReflection(map);
+                    sum += 100 * horizontalReflection.Value;
                 }
             }
 
@@ -33,10 +30,78 @@ namespace AdventOfCode2023.PuzzleSolver
 
         public string SolvePartTwo(bool test = false)
         {
-            throw new System.NotImplementedException();
+            long sum = 0;
+            foreach (char[,] map in ReadMaps(test))
+            {
+                PrintMap(map);
+
+                var result = new Tuple<int, Orientation>(-1, Orientation.None);
+
+                int? verticalReflection = FindVerticalReflection(map);
+
+                if (verticalReflection.HasValue)
+                {
+                    result = new Tuple<int, Orientation>(verticalReflection.Value, Orientation.Vertical);
+                    Console.WriteLine($"Original: vertical reflection line on {result.Item1}.");
+                    Console.WriteLine();
+                }
+                else
+                {
+                    int? horizontalReflection = FindHorizontalReflection(map);
+                    result = new Tuple<int, Orientation>(horizontalReflection.Value, Orientation.Horizontal);
+                    Console.WriteLine($"Original: horizontal reflection line on {result.Item1}.");
+                    Console.WriteLine();
+                }
+
+                bool foundSmudge = false;
+                for (int i = 0; i < map.GetLength(0); i++)
+                {
+                    for (int j = 0; j < map.GetLength(1); j++)
+                    {
+                        char[,] newMap = FixSmudge(map, i, j);
+                        verticalReflection = FindVerticalReflection(newMap);
+                        if (verticalReflection.HasValue)
+                        {
+                            var newResult = new Tuple<int, Orientation>(verticalReflection.Value, Orientation.Vertical);
+
+                            if (newResult != result)
+                            {
+                                Console.WriteLine($"Correction: vertical reflection line on {verticalReflection.Value}.");
+                                Console.WriteLine();
+
+                                sum += verticalReflection.Value;
+                                foundSmudge = true;
+                                break;
+                            }
+                        }
+                        
+                        int? horReflection = FindHorizontalReflection(newMap);
+                        if (horReflection.HasValue)
+                        {
+                            var newResult = new Tuple<int, Orientation>(horReflection.Value, Orientation.Horizontal);
+                            if (newResult != result)
+                            {
+                                Console.WriteLine($"Correction: horizontal reflection line on {horReflection.Value}.");
+                                Console.WriteLine();
+
+                                sum += 100 * horReflection.Value;
+                                foundSmudge = true;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (foundSmudge)
+                    {
+                        break;
+                    }
+                }
+            }
+
+            return sum.ToString();
         }
 
-        private IEnumerable<int> FindHorizontalReflection(char[,] map)
+        private int? FindHorizontalReflection(char[,] map)
         {
             int numRows = map.GetLength(0);
             int numCols = map.GetLength(1);
@@ -79,12 +144,14 @@ namespace AdventOfCode2023.PuzzleSolver
 
                 if (reflection)
                 {
-                    yield return i;
+                    return i;
                 }
             }
+
+            return null;
         }
 
-        private IEnumerable<int> FindVerticalReflection(char[,] map)
+        private int? FindVerticalReflection(char[,] map)
         {
             int numRows = map.GetLength(0);
             int numCols = map.GetLength(1);
@@ -127,9 +194,32 @@ namespace AdventOfCode2023.PuzzleSolver
 
                 if (reflection)
                 {
-                    yield return j;
+                    return j;
                 }
             }
+
+            return null;
+        }
+
+        private char[,] FixSmudge(char[,] map, int x, int y)
+        {
+            var newMap = new char[map.GetLength(0), map.GetLength(1)];
+            for (int i = 0; i < newMap.GetLength(0); i++)
+            { 
+                for (int j = 0; j < newMap.GetLength(1); j++)
+                {
+                    if (i == x && j == y)
+                    {
+                        newMap[i, j] = (map[i, j] == '.') ? '#' : '.';
+                    }
+                    else
+                    {
+                        newMap[i, j] = map[i, j];
+                    }
+                }
+            }
+
+            return newMap;
         }
 
         private static void PrintMap(char[,] map)
@@ -188,5 +278,12 @@ namespace AdventOfCode2023.PuzzleSolver
 
             return map;
         }
+    }
+
+    internal enum Orientation
+    {
+        None,
+        Horizontal,
+        Vertical
     }
 }
