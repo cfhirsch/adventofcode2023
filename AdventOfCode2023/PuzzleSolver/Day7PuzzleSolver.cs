@@ -33,10 +33,6 @@ namespace AdventOfCode2023.PuzzleSolver
             long sum = 0;
             for (int i = 1; i <= hands.Count; i++)
             {
-                if (isPartTwo)
-                {
-                    Console.WriteLine($"{hands[i - 1]}:{hands[i - 1].HandType}");
-                }
                 sum += i * hands[i - 1].Bid;
             }
 

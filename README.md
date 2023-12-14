@@ -163,6 +163,11 @@ Apparently my approach in Part One was fast enough to efficiently solve Part Two
 ### Part One:
 Not that difficult. I read each map into a char array. Then I went through each column to find potentional pivot points for a reflection, and similarly for each row.
 
+### Part Two:
+This part tripped me up for a bit. The insight I was missing was that, for a given mirror, once the smudge was removed, the original AND new reflections could both be present.
+So I needed to modify the code from part one; instead of looking for a reflection (or null if no reflection of the given orientation exists), I needed to return a list of 
+reflections. For each mirror I had to check if there was a reflectoion in the list that didn't match what I found prior to removing the smudge.
+
 ## Dec 14
 
 ### Part One:

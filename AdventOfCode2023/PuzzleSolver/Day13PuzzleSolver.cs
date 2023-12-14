@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.SymbolStore;
+using System.Linq;
 using AdventOfCode2023.Utilities;
 
 namespace AdventOfCode2023.PuzzleSolver
@@ -12,16 +12,16 @@ namespace AdventOfCode2023.PuzzleSolver
             long sum = 0;
             foreach (char[,] map in ReadMaps(test))
             {
-                int? verticalReflection = FindVerticalReflection(map);
+                List<int> verticalReflections = FindVerticalReflections(map);
 
-                if (verticalReflection.HasValue)
+                if (verticalReflections.Any())
                 {
-                    sum += verticalReflection.Value;
+                    sum += verticalReflections.First();
                 }
                 else
                 {
-                    int? horizontalReflection = FindHorizontalReflection(map);
-                    sum += 100 * horizontalReflection.Value;
+                    List<int> horizontalReflection = FindHorizontalReflections(map);
+                    sum += 100 * horizontalReflection.First();
                 }
             }
 
@@ -33,24 +33,16 @@ namespace AdventOfCode2023.PuzzleSolver
             long sum = 0;
             foreach (char[,] map in ReadMaps(test))
             {
-                ConsoleUtilities.PrintMap(map);
-
                 var result = new Tuple<int, Orientation>(-1, Orientation.None);
-
-                int? verticalReflection = FindVerticalReflection(map);
-
-                if (verticalReflection.HasValue)
+                List<int> verticalReflections = FindVerticalReflections(map);
+                if (verticalReflections.Any())
                 {
-                    result = new Tuple<int, Orientation>(verticalReflection.Value, Orientation.Vertical);
-                    Console.WriteLine($"Original: vertical reflection line on {result.Item1}.");
-                    Console.WriteLine();
+                    result = new Tuple<int, Orientation>(verticalReflections.First(), Orientation.Vertical);
                 }
                 else
                 {
-                    int? horizontalReflection = FindHorizontalReflection(map);
-                    result = new Tuple<int, Orientation>(horizontalReflection.Value, Orientation.Horizontal);
-                    Console.WriteLine($"Original: horizontal reflection line on {result.Item1}.");
-                    Console.WriteLine();
+                    List<int> horizontalReflections = FindHorizontalReflections(map);
+                    result = new Tuple<int, Orientation>(horizontalReflections.First(), Orientation.Horizontal);
                 }
 
                 bool foundSmudge = false;
@@ -59,35 +51,39 @@ namespace AdventOfCode2023.PuzzleSolver
                     for (int j = 0; j < map.GetLength(1); j++)
                     {
                         char[,] newMap = FixSmudge(map, i, j);
-                        verticalReflection = FindVerticalReflection(newMap);
-                        if (verticalReflection.HasValue)
+                        verticalReflections = FindVerticalReflections(newMap);
+                        foreach (int reflection in verticalReflections)
                         {
-                            var newResult = new Tuple<int, Orientation>(verticalReflection.Value, Orientation.Vertical);
-
-                            if (newResult != result)
+                            var newResult = new Tuple<int, Orientation>(reflection, Orientation.Vertical);
+                            
+                            if (!newResult.Equals(result))
                             {
-                                Console.WriteLine($"Correction: vertical reflection line on {verticalReflection.Value}.");
-                                Console.WriteLine();
-
-                                sum += verticalReflection.Value;
+                                sum += newResult.Item1;
                                 foundSmudge = true;
                                 break;
                             }
                         }
-                        
-                        int? horReflection = FindHorizontalReflection(newMap);
-                        if (horReflection.HasValue)
-                        {
-                            var newResult = new Tuple<int, Orientation>(horReflection.Value, Orientation.Horizontal);
-                            if (newResult != result)
-                            {
-                                Console.WriteLine($"Correction: horizontal reflection line on {horReflection.Value}.");
-                                Console.WriteLine();
 
-                                sum += 100 * horReflection.Value;
+                        if (foundSmudge)
+                        {
+                            break;
+                        }
+                        
+                        foreach (int reflection in FindHorizontalReflections(newMap))
+                        { 
+                            var newResult = new Tuple<int, Orientation>(reflection, Orientation.Horizontal);
+                            
+                            if (!newResult.Equals(result))
+                            {
+                                sum += 100 * newResult.Item1;
                                 foundSmudge = true;
                                 break;
                             }
+                        }
+
+                        if (foundSmudge)
+                        {
+                            break;
                         }
                     }
 
@@ -101,10 +97,12 @@ namespace AdventOfCode2023.PuzzleSolver
             return sum.ToString();
         }
 
-        private int? FindHorizontalReflection(char[,] map)
+        private List<int> FindHorizontalReflections(char[,] map)
         {
             int numRows = map.GetLength(0);
             int numCols = map.GetLength(1);
+
+            var reflections = new List<int>();
 
             // e.g. for 8 columns, 
             // 0|1
@@ -144,17 +142,19 @@ namespace AdventOfCode2023.PuzzleSolver
 
                 if (reflection)
                 {
-                    return i;
+                    reflections.Add(i);
                 }
             }
 
-            return null;
+            return reflections;
         }
 
-        private int? FindVerticalReflection(char[,] map)
+        private List<int> FindVerticalReflections(char[,] map)
         {
             int numRows = map.GetLength(0);
             int numCols = map.GetLength(1);
+
+            var reflections = new List<int>();
 
             // e.g. for 8 columns, 
             // 0|1
@@ -194,11 +194,11 @@ namespace AdventOfCode2023.PuzzleSolver
 
                 if (reflection)
                 {
-                    return j;
+                    reflections.Add(j);
                 }
             }
 
-            return null;
+            return reflections;
         }
 
         private char[,] FixSmudge(char[,] map, int x, int y)

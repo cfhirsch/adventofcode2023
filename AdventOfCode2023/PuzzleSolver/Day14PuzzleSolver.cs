@@ -31,8 +31,7 @@ namespace AdventOfCode2023.PuzzleSolver
         {
             var visited = new Dictionary<string, int>();
             char[,] map = ReadMap(test);
-            ConsoleUtilities.PrintMap(map);
-
+            
             int cycle = 0;
             int remainder = -1;
             visited.Add(CharArrayToString(map), cycle);
@@ -57,11 +56,6 @@ namespace AdventOfCode2023.PuzzleSolver
                 else
                 {
                     visited.Add(key, cycle);
-                }
-
-                if (cycle <= 3)
-                {
-                    ConsoleUtilities.PrintMap(map);
                 }
             }
 
