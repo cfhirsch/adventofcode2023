@@ -178,3 +178,8 @@ A "find the cycle" problem, which is a common pattern in AdventOfCode puzzles. I
 whose values are the cycle at which the given configuration was first encountered. Cycle and add to the visited dictionary until you find a configuration that's been visited before.
 Let cycleStart be the cycle at which the given pattern was first encountered. Let cycleLength = current_cycle_number - cycleStart. Then we only need to 
 cycle another (1000000000 - cycleStart) % cycleLength times to get the answer.
+
+## Dec 15
+
+### Part One:
+Very straightforward. I'll let the code speak for itself.
