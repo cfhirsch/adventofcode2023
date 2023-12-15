@@ -183,3 +183,6 @@ cycle another (1000000000 - cycleStart) % cycleLength times to get the answer.
 
 ### Part One:
 Very straightforward. I'll let the code speak for itself.
+
+### Part Two:
+Also straightforward, as long as one follows the instructions carefully :).
