@@ -1,5 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Runtime.InteropServices;
+using System.Security.Claims;
 
 namespace AdventOfCode2023.Utilities
 {
@@ -18,6 +21,21 @@ namespace AdventOfCode2023.Utilities
                     }
                 }
             }
+        }
+
+        public static char[,] ReadMap(int day, bool isTest = false)
+        {
+            List<string> lines = ReadLines(day, isTest).ToList();
+            var map = new char[lines.Count, lines[0].Length];
+            for (int i = 0; i < lines.Count; i++) 
+            {
+                for (int j = 0; j < lines[i].Length; j++)
+                {
+                    map[i, j] = lines[i][j];
+                }
+            }
+
+            return map;
         }
     }
 }
