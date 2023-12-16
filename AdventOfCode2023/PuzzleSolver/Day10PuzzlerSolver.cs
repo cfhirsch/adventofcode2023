@@ -79,7 +79,7 @@ namespace AdventOfCode2023.PuzzleSolver
                     external.Add(loc);
                 }
 
-                loc = new Tuple<int, int>(i, map.GetLength(0) - 1);
+                loc = new Tuple<int, int>(i, expandedMap.GetLength(1) - 1);
                 if (!inLoop.Contains(loc))
                 {
                     external.Add(loc);
@@ -94,7 +94,7 @@ namespace AdventOfCode2023.PuzzleSolver
                     external.Add(loc);
                 }
 
-                loc = new Tuple<int, int>(map.GetLength(1) - 1, j);
+                loc = new Tuple<int, int>(expandedMap.GetLength(0) - 1, j);
                 if (!inLoop.Contains(loc))
                 {
                     external.Add(loc);
@@ -105,26 +105,24 @@ namespace AdventOfCode2023.PuzzleSolver
 
             var internalTiles = new HashSet<Tuple<int, int>>();
 
-            for (int i = 0; i < numRows; i++)
+            for (int i = 0; i < 2 * numRows - 1; i++)
             {
-                for (int j = 0; j < numCols; j++)
+                for (int j = 0; j < 2 * numCols - 1; j++)
                 {
                     var loc = new Tuple<int, int>(i, j);
 
-                    var expandedLoc = new Tuple<int, int>(i * 2, j * 2);
-
-                    if (!inLoop.Contains(expandedLoc) && !external.Contains(expandedLoc))
+                    if (!inLoop.Contains(loc) && !external.Contains(loc))
                     {
                         var visited = new HashSet<Tuple<int, int>>();
                         queue = new Queue<Tuple<int, int>>();
-                        queue.Enqueue(expandedLoc);
+                        queue.Enqueue(loc);
                         bool isExternal = false;
                         while (queue.Count > 0)
                         {
                             var current = queue.Dequeue();
                             visited.Add(current);
                             foreach (Tuple<int, int> neighbor in GetNeighborTiles(
-                                expandedLoc.Item1, expandedLoc.Item2, 2 * numRows - 1, 2 * numCols - 1))
+                                current.Item1, current.Item2, 2 * numRows - 1, 2 * numCols - 1))
                             {
                                 if (visited.Contains(neighbor))
                                 {
@@ -133,7 +131,7 @@ namespace AdventOfCode2023.PuzzleSolver
 
                                 if (external.Contains(neighbor))
                                 {
-                                    external.Add(expandedLoc);
+                                    external.Add(loc);
                                     isExternal = true;
                                     break;
                                 }
@@ -157,7 +155,40 @@ namespace AdventOfCode2023.PuzzleSolver
                 }
             }
 
-            int numEnclosed = internalTiles.Count();
+            foreach (Tuple<int, int> internalTile in internalTiles)
+            {
+                if (internalTile.Item1 % 2 == 0 && internalTile.Item2 % 2 == 0)
+                {
+                    map[internalTile.Item1 / 2, internalTile.Item2 / 2] = 'I';
+                }
+
+                expandedMap[internalTile.Item1, internalTile.Item2] = 'I';
+            }
+
+            foreach (Tuple<int, int> externalTile in external)
+            {
+                if (externalTile.Item1 % 2 == 0 && externalTile.Item2 % 2 == 0)
+                {
+                    map[externalTile.Item1 / 2, externalTile.Item2 / 2] = 'O';
+                }
+
+                expandedMap[externalTile.Item1, externalTile.Item2] = 'O';
+            }
+
+            foreach (Tuple<int, int> loopTile in inLoop)
+            {
+                if (loopTile.Item1 % 2 == 0 && loopTile.Item2 % 2 == 0)
+                {
+                    map[loopTile.Item1 / 2, loopTile.Item2 / 2] = 'L';
+                }
+
+                expandedMap[loopTile.Item1, loopTile.Item2] = 'L';
+            }
+
+            ConsoleUtilities.PrintMap(map);
+            ConsoleUtilities.PrintMap(expandedMap);
+
+            int numEnclosed = internalTiles.Count(t => t.Item1 % 2 == 0 && t.Item2 % 2 == 0);
             return numEnclosed.ToString();
         }
 
