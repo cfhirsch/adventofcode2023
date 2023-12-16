@@ -117,7 +117,17 @@ and my puzzle input, there were only two possible kinds of tiles that the start 
 my code only works for the specific instances that I've been given, so very well may not work for all puzzle inputs.
 
 ### Part Two:
-I'll have to find the time to think about this one a little more.
+Whew! This one took me a while (longer than it should have, honestly). What I ended up doing was expanding the original map by adding new rows between each existing row, 
+and then new columns between each existing column. If two tiles were joined in the loop before, the new tile between them will keep them connected, otherwise there will
+be a space between them. Thus we can explicitly model the gaps between pipes. Then I went through the boundaries of the map and added any obvious external tiles (i.e.,
+any boundary tile that is not in the loop would be external). Finally,
+I looked at tiles that I didn't already know are in the loop or external, and for each one, did a breadth first search of tiles reachable from that tile (being reachable
+if there is a path of tiles, going either left/right or up/down, none of which are on the loop). If I reach a tile known to be external, then every tile on that path is
+marked as external (if it hasn't already). If the search exhausts without reaching an external tile, then this is an internal tile.
+
+I made one of those kinds of programming mistakes that would be obvious if I had an extra pair of eyes, and I initially screwed up the breadth first search; namely not marking tiles
+as visited at the right place, which didn't effect the correctness of my code, but caused the queue to explode at one tile. Once I fixed that the right answer was generated 
+in a few seconds.
 
 ## Dec 11
 

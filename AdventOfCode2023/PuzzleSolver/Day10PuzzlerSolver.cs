@@ -101,7 +101,10 @@ namespace AdventOfCode2023.PuzzleSolver
                 }
             }
 
-            ConsoleUtilities.PrintMap(expandedMap);
+            if (test)
+            {
+                ConsoleUtilities.PrintMap(expandedMap);
+            }
 
             var internalTiles = new HashSet<Tuple<int, int>>();
 
@@ -111,16 +114,16 @@ namespace AdventOfCode2023.PuzzleSolver
                 {
                     var loc = new Tuple<int, int>(i, j);
 
-                    if (!inLoop.Contains(loc) && !external.Contains(loc))
+                    if (!inLoop.Contains(loc) && !external.Contains(loc) && !internalTiles.Contains(loc))
                     {
                         var visited = new HashSet<Tuple<int, int>>();
                         queue = new Queue<Tuple<int, int>>();
                         queue.Enqueue(loc);
+                        visited.Add(loc);
                         bool isExternal = false;
                         while (queue.Count > 0)
                         {
                             var current = queue.Dequeue();
-                            visited.Add(current);
                             foreach (Tuple<int, int> neighbor in GetNeighborTiles(
                                 current.Item1, current.Item2, 2 * numRows - 1, 2 * numCols - 1))
                             {
@@ -132,11 +135,21 @@ namespace AdventOfCode2023.PuzzleSolver
                                 if (external.Contains(neighbor))
                                 {
                                     external.Add(loc);
+
+                                    foreach (Tuple<int, int> tile in visited)
+                                    {
+                                        if (!inLoop.Contains(tile))
+                                        {
+                                            external.Add(tile);
+                                        }
+                                    }
+
                                     isExternal = true;
                                     break;
                                 }
                                 else if (!inLoop.Contains(neighbor))
                                 {
+                                    visited.Add(neighbor);
                                     queue.Enqueue(neighbor);
                                 }
                             }
@@ -150,43 +163,54 @@ namespace AdventOfCode2023.PuzzleSolver
                         if (!isExternal)
                         {
                             internalTiles.Add(loc);
+
+                            foreach (var tile in visited)
+                            {
+                                if (!inLoop.Contains(tile))
+                                {
+                                    internalTiles.Add(tile);
+                                }
+                            }
                         }
                     }
                 }
             }
 
-            foreach (Tuple<int, int> internalTile in internalTiles)
+            if (test)
             {
-                if (internalTile.Item1 % 2 == 0 && internalTile.Item2 % 2 == 0)
+                foreach (Tuple<int, int> internalTile in internalTiles)
                 {
-                    map[internalTile.Item1 / 2, internalTile.Item2 / 2] = 'I';
+                    if (internalTile.Item1 % 2 == 0 && internalTile.Item2 % 2 == 0)
+                    {
+                        map[internalTile.Item1 / 2, internalTile.Item2 / 2] = 'I';
+                    }
+
+                    expandedMap[internalTile.Item1, internalTile.Item2] = 'I';
                 }
 
-                expandedMap[internalTile.Item1, internalTile.Item2] = 'I';
-            }
-
-            foreach (Tuple<int, int> externalTile in external)
-            {
-                if (externalTile.Item1 % 2 == 0 && externalTile.Item2 % 2 == 0)
+                foreach (Tuple<int, int> externalTile in external)
                 {
-                    map[externalTile.Item1 / 2, externalTile.Item2 / 2] = 'O';
+                    if (externalTile.Item1 % 2 == 0 && externalTile.Item2 % 2 == 0)
+                    {
+                        map[externalTile.Item1 / 2, externalTile.Item2 / 2] = 'O';
+                    }
+
+                    expandedMap[externalTile.Item1, externalTile.Item2] = 'O';
                 }
 
-                expandedMap[externalTile.Item1, externalTile.Item2] = 'O';
-            }
-
-            foreach (Tuple<int, int> loopTile in inLoop)
-            {
-                if (loopTile.Item1 % 2 == 0 && loopTile.Item2 % 2 == 0)
+                foreach (Tuple<int, int> loopTile in inLoop)
                 {
-                    map[loopTile.Item1 / 2, loopTile.Item2 / 2] = 'L';
+                    if (loopTile.Item1 % 2 == 0 && loopTile.Item2 % 2 == 0)
+                    {
+                        map[loopTile.Item1 / 2, loopTile.Item2 / 2] = 'L';
+                    }
+
+                    expandedMap[loopTile.Item1, loopTile.Item2] = 'L';
                 }
 
-                expandedMap[loopTile.Item1, loopTile.Item2] = 'L';
+                ConsoleUtilities.PrintMap(map);
+                ConsoleUtilities.PrintMap(expandedMap);
             }
-
-            ConsoleUtilities.PrintMap(map);
-            ConsoleUtilities.PrintMap(expandedMap);
 
             int numEnclosed = internalTiles.Count(t => t.Item1 % 2 == 0 && t.Item2 % 2 == 0);
             return numEnclosed.ToString();
