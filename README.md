@@ -109,6 +109,8 @@ LCM(P_1, P_2, ..., P_n), the least common multiple of the P_i's. I had to crib a
 ## Dec 9
 Both parts were really easy. I'll let the code speak for itself.
 
+Fun fact, the puzzle is about the Method of Differences, used by Charles Babbage in his Difference Engine.
+
 ## Dec 10
 
 ### Part One:
