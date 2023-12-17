@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Drawing;
 using AdventOfCode2023.Utilities;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace AdventOfCode2023.PuzzleSolver
 {
@@ -10,10 +11,107 @@ namespace AdventOfCode2023.PuzzleSolver
         public string SolvePartOne(bool test = false)
         {
             char[,] map = PuzzleReader.ReadMap(16, test);
-            
+            int numEnergized = Solve(map, 0, 0, BeamDirection.Right);
+            return numEnergized.ToString();
+        }
+
+        public string SolvePartTwo(bool test = false)
+        {
+            char[,] map = PuzzleReader.ReadMap(16, test);
+            int maxEnergized = Int32.MinValue;
+
+            // Look at top row.
+            for (int j = 0; j < map.GetLength(1); j++)
+            {
+                int numEnergized = Solve(map, 0, j, BeamDirection.Down);
+                if (numEnergized > maxEnergized)
+                {
+                    maxEnergized = numEnergized;
+                }
+            }
+
+            // Look at bottom row.
+            for (int j = 0; j < map.GetLength(1); j++)
+            {
+                int numEnergized = Solve(map, map.GetLength(0) - 1, j, BeamDirection.Up);
+                if (numEnergized > maxEnergized)
+                {
+                    maxEnergized = numEnergized;
+                }
+            }
+
+            // Look at leftmost column.
+            for (int i = 0; i < map.GetLength(0); i++)
+            {
+                int numEnergized = Solve(map, i, 0, BeamDirection.Right);
+                if (numEnergized > maxEnergized)
+                {
+                    maxEnergized = numEnergized;
+                }
+            }
+
+            // Look at rightmost column.
+            for (int i = 0; i < map.GetLength(0); i++)
+            {
+                int numEnergized = Solve(map, i, map.GetLength(1) - 1, BeamDirection.Left);
+                if (numEnergized > maxEnergized)
+                {
+                    maxEnergized = numEnergized;
+                }
+            }
+
+            return maxEnergized.ToString();
+        }
+
+        private static Beam GetNextBeam(Point position, BeamDirection direction, int maxX, int maxY)
+        {
+            switch (direction)
+            {
+                case BeamDirection.Left:
+                    if (position.Y > 0)
+                    {
+                        return new Beam { Location = new Point(position.X, position.Y - 1), Direction = direction };
+                    }
+
+                    break;
+
+                case BeamDirection.Right:
+                    if (position.Y < maxY - 1)
+                    {
+                        return new Beam { Location = new Point(position.X, position.Y + 1), Direction = direction };
+                    }
+
+                    break;
+
+                case BeamDirection.Up:
+                    if (position.X > 0)
+                    {
+                        return new Beam { Location = new Point(position.X - 1, position.Y), Direction = direction };
+                    }
+
+                    break;
+
+                case BeamDirection.Down:
+                    if (position.X < maxX - 1)
+                    {
+                        return new Beam { Location = new Point(position.X + 1, position.Y), Direction = direction };
+                    }
+
+                    break;
+
+                default:
+                    throw new ArgumentException($"Unexpected direction {direction}.");
+
+            }
+
+            return null;
+        }
+
+        private static int Solve(char[,] map, int startX, int startY, BeamDirection startDir)
+        {
             var beams = new List<Beam>
             {
-                new Beam { Location = new Point(0, 0), Direction = BeamDirection.Right }
+                new Beam { Location = new Point(startX, startY), Direction = startDir }
             };
 
             int numEnergized = 0;
@@ -154,11 +252,11 @@ namespace AdventOfCode2023.PuzzleSolver
                 beams = nextBeams;
             }
 
-            if (test)
+            /*if (test)
             {
                 ConsoleUtilities.PrintMap(beamMap);
                 ConsoleUtilities.PrintMap(energyMap);
-            }
+            }*/
 
             numEnergized = 0;
             for (int i = 0; i < numRows; i++)
@@ -172,56 +270,7 @@ namespace AdventOfCode2023.PuzzleSolver
                 }
             }
 
-            return numEnergized.ToString();
-        }
-
-        public string SolvePartTwo(bool test = false)
-        {
-            throw new NotImplementedException();
-        }
-
-        private static Beam GetNextBeam(Point position, BeamDirection direction, int maxX, int maxY)
-        {
-            switch (direction)
-            {
-                case BeamDirection.Left:
-                    if (position.Y > 0)
-                    {
-                        return new Beam { Location = new Point(position.X, position.Y - 1), Direction = direction };
-                    }
-
-                    break;
-
-                case BeamDirection.Right:
-                    if (position.Y < maxY - 1)
-                    {
-                        return new Beam { Location = new Point(position.X, position.Y + 1), Direction = direction };
-                    }
-
-                    break;
-
-                case BeamDirection.Up:
-                    if (position.X > 0)
-                    {
-                        return new Beam { Location = new Point(position.X - 1, position.Y), Direction = direction };
-                    }
-
-                    break;
-
-                case BeamDirection.Down:
-                    if (position.X < maxX - 1)
-                    {
-                        return new Beam { Location = new Point(position.X + 1, position.Y), Direction = direction };
-                    }
-
-                    break;
-
-                default:
-                    throw new ArgumentException($"Unexpected direction {direction}.");
-
-            }
-
-            return null;
+            return numEnergized;
         }
 
         private static void UpdateBeamMap(char[,] map, Beam beam)
