@@ -53,6 +53,7 @@
     <Compile Include="PuzzleSolver\Day13PuzzleSolver.cs" />
     <Compile Include="PuzzleSolver\Day15PuzzleSolver.cs" />
     <Compile Include="PuzzleSolver\Day16PuzzleSolver.cs" />
+    <Compile Include="PuzzleSolver\Day17PuzzleSolver.cs" />
     <Compile Include="PuzzleSolver\Day1PuzzleSolver.cs" />
     <Compile Include="PuzzleSolver\Day2PuzzleSolver.cs" />
     <Compile Include="PuzzleSolver\Day3PuzzleSolver.cs" />
@@ -67,6 +68,7 @@
     <Compile Include="PuzzleSolver\PuzzleSolverFactory.cs" />
     <Compile Include="Utilities\ConsoleUtilities.cs" />
     <Compile Include="Utilities\ListExtensions.cs" />
+    <Compile Include="Utilities\PriorityQueue.cs" />
     <Compile Include="Utilities\PuzzleReader.cs" />
   </ItemGroup>
   <ItemGroup>
