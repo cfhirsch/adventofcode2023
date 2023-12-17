@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using AdventOfCode2023.Utilities;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace AdventOfCode2023.PuzzleSolver
 {
@@ -108,13 +108,7 @@ namespace AdventOfCode2023.PuzzleSolver
         }
 
         private static int Solve(char[,] map, int startX, int startY, BeamDirection startDir)
-        {
-            var beams = new List<Beam>
-            {
-                new Beam { Location = new Point(startX, startY), Direction = startDir }
-            };
-
-            int numEnergized = 0;
+        { 
             int numRows = map.GetLength(0);
             int numCols = map.GetLength(1);
 
@@ -129,23 +123,28 @@ namespace AdventOfCode2023.PuzzleSolver
                 }
             }
 
-            energyMap[0, 0] = '#';
+            energyMap[startX, startY] = '#';
 
-            for (int x = 0; x < 800; x++)
+            var queue = new Queue<Beam>();
+            var visited = new HashSet<Beam>();
+
+            var beam = new Beam { Location = new Point(startX, startY), Direction = startDir };
+            queue.Enqueue(beam);
+            
+            while (queue.Count > 0)
             {
-                var nextBeams = new List<Beam>();
-                foreach (Beam beam in beams)
+                Beam current = queue.Dequeue();
+                visited.Add(current);
+                UpdateBeamMap(beamMap, current);
+                var nextDirs = new List<BeamDirection>();
+                switch (map[current.Location.X, current.Location.Y])
                 {
-                    UpdateBeamMap(beamMap, beam);
-                    var nextDirs = new List<BeamDirection>();
-                    switch (map[beam.Location.X, beam.Location.Y])
-                    {
-                        case '.':
-                            nextDirs.Add(beam.Direction);
-                            break;
+                    case '.':
+                        nextDirs.Add(current.Direction);
+                        break;
 
-                        case '/':
-                            switch (beam.Direction)
+                    case '/':
+                        switch (current.Direction)
                             {
                                 case BeamDirection.Right:
                                     nextDirs.Add(BeamDirection.Up);
@@ -170,7 +169,7 @@ namespace AdventOfCode2023.PuzzleSolver
                             break;
 
                         case '\\':
-                            switch (beam.Direction)
+                            switch (current.Direction)
                             {
                                 case BeamDirection.Right:
                                     nextDirs.Add(BeamDirection.Down);
@@ -195,7 +194,7 @@ namespace AdventOfCode2023.PuzzleSolver
                             break;
 
                         case '|':
-                            switch (beam.Direction)
+                            switch (current.Direction)
                             {
                                 case BeamDirection.Right:
                                 case BeamDirection.Left:
@@ -205,7 +204,7 @@ namespace AdventOfCode2023.PuzzleSolver
 
                                 case BeamDirection.Up:
                                 case BeamDirection.Down:
-                                    nextDirs.Add(beam.Direction);
+                                    nextDirs.Add(current.Direction);
                                     break;
 
                                 default:
@@ -215,11 +214,11 @@ namespace AdventOfCode2023.PuzzleSolver
                             break;
 
                         case '-':
-                            switch (beam.Direction)
+                            switch (current.Direction)
                             {
                                 case BeamDirection.Right:
                                 case BeamDirection.Left:
-                                    nextDirs.Add(beam.Direction);
+                                    nextDirs.Add(current.Direction);
                                     break;
 
                                 case BeamDirection.Up:
@@ -240,17 +239,14 @@ namespace AdventOfCode2023.PuzzleSolver
 
                     foreach (BeamDirection direction in nextDirs)
                     {
-                        Beam nextBeam = GetNextBeam(beam.Location, direction, numRows, numCols);
-                        if (nextBeam != null)
+                        Beam nextBeam = GetNextBeam(current.Location, direction, numRows, numCols);
+                        if (nextBeam != null && !visited.Contains(nextBeam))
                         {
-                            nextBeams.Add(nextBeam);
+                            queue.Enqueue(nextBeam);
                             energyMap[nextBeam.Location.X, nextBeam.Location.Y] = '#';
                         }
                     }
                 }
-
-                beams = nextBeams;
-            }
 
             /*if (test)
             {
@@ -258,18 +254,7 @@ namespace AdventOfCode2023.PuzzleSolver
                 ConsoleUtilities.PrintMap(energyMap);
             }*/
 
-            numEnergized = 0;
-            for (int i = 0; i < numRows; i++)
-            {
-                for (int j = 0; j < numCols; j++)
-                {
-                    if (energyMap[i, j] == '#')
-                    {
-                        numEnergized++;
-                    }
-                }
-            }
-
+            int numEnergized = visited.Select(x => x.Location).Distinct().Count();
             return numEnergized;
         }
 
@@ -339,6 +324,27 @@ namespace AdventOfCode2023.PuzzleSolver
         public Point Location { get; set; }
 
         public BeamDirection Direction { get; set; }
+
+        public override bool Equals(object obj)
+        {
+            var other = obj as Beam;
+            if (other == null)
+            {
+                return false;
+            }
+
+            return this.Location == other.Location && this.Direction == other.Direction;
+        }
+
+        public override int GetHashCode()
+        {
+            return this.ToString().GetHashCode();
+        }
+
+        public override string ToString()
+        {
+            return $"({this.Location.X},{this.Location.Y}):{this.Direction}";
+        }
     }
 
 

@@ -205,3 +205,7 @@ Also straightforward, as long as one follows the instructions carefully :).
 Kind of having an off day. The approach is straightforward, I just kept making mistakes with respect to updating the coordinates of moving beams correctly.
 I also couldn't figure out how to know when I didn't need to iterate any more; I ended up experimenting with my puzzle input to figure out a minimal number
 of steps to run to get the correct answer.
+
+### Part Two:
+UPDATE: Duh, I needed to be using a queue and, as with the solution to many of Advent puzzles, a breadth first search. We've visited a node if location and direction
+are the same. Once I made those changes I got the solution to part two as well. Although it runs a tiny bit slower than I would like.
