@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
-using System.Security.Cryptography;
 using AdventOfCode2023.Utilities;
 
 namespace AdventOfCode2023.PuzzleSolver
@@ -35,210 +33,144 @@ namespace AdventOfCode2023.PuzzleSolver
 
             energyMap[0, 0] = '#';
 
-            while (beams.Any())
+            for (int x = 0; x < 800; x++)
             {
-                //ConsoleUtilities.PrintMap(beamMap);
-                //ConsoleUtilities.PrintMap(energyMap);
-                //Console.Read();
-
                 var nextBeams = new List<Beam>();
                 foreach (Beam beam in beams)
                 {
                     UpdateBeamMap(beamMap, beam);
-                    switch (beam.Direction)
+                    var nextDirs = new List<BeamDirection>();
+                    switch (map[beam.Location.X, beam.Location.Y])
                     {
-                        case BeamDirection.Right:
-                            if (beam.Location.Y < numCols - 1)
+                        case '.':
+                            nextDirs.Add(beam.Direction);
+                            break;
+
+                        case '/':
+                            switch (beam.Direction)
                             {
-                                var nextPoint = new Point(beam.Location.X, beam.Location.Y + 1);
-                                var nextDirs = new List<BeamDirection>();
-                                char nextCh = map[beam.Location.X, beam.Location.Y + 1];
-                                switch (nextCh)
-                                {
-                                    case '.':
-                                    case '-':
-                                        nextDirs.Add(BeamDirection.Right);
-                                        break;
+                                case BeamDirection.Right:
+                                    nextDirs.Add(BeamDirection.Up);
+                                    break;
 
-                                    case '/':
-                                        nextDirs.Add(BeamDirection.Up);
-                                        break;
+                                case BeamDirection.Left:
+                                    nextDirs.Add(BeamDirection.Down);
+                                    break;
 
-                                    case '\\':
-                                        nextDirs.Add(BeamDirection.Down);
-                                        break;
+                                case BeamDirection.Up:
+                                    nextDirs.Add(BeamDirection.Right);
+                                    break;
 
-                                    case '|':
-                                        nextDirs.Add(BeamDirection.Up);
-                                        nextDirs.Add(BeamDirection.Down);
-                                        break;
+                                case BeamDirection.Down:
+                                    nextDirs.Add(BeamDirection.Left);
+                                    break;
 
-                                    default:
-                                        throw new ArgumentException($"Unexpected char {nextCh}.");
-                                }
-
-                                foreach (BeamDirection dir in nextDirs)
-                                {
-                                    nextBeams.Add(new Beam { Direction = dir, Location = nextPoint });
-                                }
+                                default:
+                                    throw new ArgumentException($"Unexpected direction {beam.Direction}.");
                             }
 
                             break;
 
-                        case BeamDirection.Left:
-
-                            if (beam.Location.Y > 0)
+                        case '\\':
+                            switch (beam.Direction)
                             {
-                                var nextPoint = new Point(beam.Location.X, beam.Location.Y - 1);
-                                var nextDirs = new List<BeamDirection>();
-                                char nextCh = map[beam.Location.X, beam.Location.Y - 1];
-                                switch (nextCh)
-                                {
-                                    case '.':
-                                    case '-':
-                                        nextDirs.Add(BeamDirection.Left);
-                                        break;
+                                case BeamDirection.Right:
+                                    nextDirs.Add(BeamDirection.Down);
+                                    break;
 
-                                    case '/':
-                                        nextDirs.Add(BeamDirection.Down);
-                                        break;
+                                case BeamDirection.Left:
+                                    nextDirs.Add(BeamDirection.Up);
+                                    break;
 
-                                    case '\\':
-                                        nextDirs.Add(BeamDirection.Up);
-                                        break;
+                                case BeamDirection.Up:
+                                    nextDirs.Add(BeamDirection.Left);
+                                    break;
 
-                                    case '|':
-                                        nextDirs.Add(BeamDirection.Up);
-                                        nextDirs.Add(BeamDirection.Down);
-                                        break;
+                                case BeamDirection.Down:
+                                    nextDirs.Add(BeamDirection.Right);
+                                    break;
 
-                                    default:
-                                        throw new ArgumentException($"Unexpected char {nextCh}.");
-                                }
-
-                                foreach (BeamDirection dir in nextDirs)
-                                {
-                                    nextBeams.Add(new Beam { Direction = dir, Location = nextPoint });
-                                }
+                                default:
+                                    throw new ArgumentException($"Unexpected direction {beam.Direction}.");
                             }
 
                             break;
 
-                        case BeamDirection.Up:
-
-                            if (beam.Location.X > 0)
+                        case '|':
+                            switch (beam.Direction)
                             {
-                                var nextPoint = new Point(beam.Location.X - 1, beam.Location.Y);
-                                var nextDirs = new List<BeamDirection>();
-                                char nextCh = map[beam.Location.X - 1, beam.Location.Y];
-                                switch (nextCh)
-                                {
-                                    case '.':
-                                    case '|':
-                                        nextDirs.Add(BeamDirection.Up);
-                                        break;
+                                case BeamDirection.Right:
+                                case BeamDirection.Left:
+                                    nextDirs.Add(BeamDirection.Up);
+                                    nextDirs.Add(BeamDirection.Down);
+                                    break;
 
-                                    case '/':
-                                        nextDirs.Add(BeamDirection.Right);
-                                        break;
+                                case BeamDirection.Up:
+                                case BeamDirection.Down:
+                                    nextDirs.Add(beam.Direction);
+                                    break;
 
-                                    case '\\':
-                                        nextDirs.Add(BeamDirection.Left);
-                                        break;
-
-                                    case '-':
-                                        nextDirs.Add(BeamDirection.Left);
-                                        nextDirs.Add(BeamDirection.Right);
-                                        break;
-
-                                    default:
-                                        throw new ArgumentException($"Unexpected char {nextCh}.");
-                                }
-
-                                foreach (BeamDirection dir in nextDirs)
-                                {
-                                    nextBeams.Add(new Beam { Direction = dir, Location = nextPoint });
-                                }
+                                default:
+                                    throw new ArgumentException($"Unexpected direction {beam.Direction}.");
                             }
+
                             break;
 
-                            case BeamDirection.Down:
+                        case '-':
+                            switch (beam.Direction)
+                            {
+                                case BeamDirection.Right:
+                                case BeamDirection.Left:
+                                    nextDirs.Add(beam.Direction);
+                                    break;
 
-                                if (beam.Location.X < numRows - 1)
-                                {
-                                    var nextPoint = new Point(beam.Location.X + 1, beam.Location.Y);
-                                    var nextDirs = new List<BeamDirection>();
-                                    char nextCh = map[beam.Location.X + 1, beam.Location.Y];
-                                    switch (nextCh)
-                                    {
-                                        case '.':
-                                        case '|':
-                                            nextDirs.Add(BeamDirection.Down);
-                                            break;
+                                case BeamDirection.Up:
+                                case BeamDirection.Down:
+                                    nextDirs.Add(BeamDirection.Left);
+                                    nextDirs.Add(BeamDirection.Right);
+                                    break;
 
-                                        case '/':
-                                            nextDirs.Add(BeamDirection.Left);
-                                            break;
+                                default:
+                                    throw new ArgumentException($"Unexpected direction {beam.Direction}.");
+                            }
 
-                                        case '\\':
-                                            nextDirs.Add(BeamDirection.Right);
-                                            break;
-
-                                        case '-':
-                                            nextDirs.Add(BeamDirection.Left);
-                                            nextDirs.Add(BeamDirection.Right);
-                                            break;
-
-                                        default:
-                                            throw new ArgumentException($"Unexpected char {nextCh}.");
-                                    }
-
-                                    foreach (BeamDirection dir in nextDirs)
-                                    {
-                                        nextBeams.Add(new Beam { Direction = dir, Location = nextPoint });
-                                    }
-                                }
-
-                                break;
+                            break;
 
                         default:
-                            throw new ArgumentException($"Unexpected direction {beam.Direction}");
-
+                            throw new ArgumentException($"Unexpected character {map[beam.Location.X, beam.Location.Y]}");
                     }
-                }
 
-                beams = nextBeams;
-
-                foreach (Beam beam in beams)
-                {
-                    energyMap[beam.Location.X, beam.Location.Y] = '#';
-                }
-
-                int nextEnergized = 0;
-                for (int i = 0; i < numRows; i++)
-                {
-                    for (int j = 0; j < numCols; j++)
+                    foreach (BeamDirection direction in nextDirs)
                     {
-                        if (energyMap[i, j] == '#')
+                        Beam nextBeam = GetNextBeam(beam.Location, direction, numRows, numCols);
+                        if (nextBeam != null)
                         {
-                            nextEnergized++;
+                            nextBeams.Add(nextBeam);
+                            energyMap[nextBeam.Location.X, nextBeam.Location.Y] = '#';
                         }
                     }
                 }
 
-                if (nextEnergized == numEnergized)
-                {
-                    break;
-                }
-                else
-                {
-                    numEnergized = nextEnergized;
-                }
-
+                beams = nextBeams;
             }
 
-            ConsoleUtilities.PrintMap(beamMap);
-            ConsoleUtilities.PrintMap(energyMap);
+            if (test)
+            {
+                ConsoleUtilities.PrintMap(beamMap);
+                ConsoleUtilities.PrintMap(energyMap);
+            }
+
+            numEnergized = 0;
+            for (int i = 0; i < numRows; i++)
+            {
+                for (int j = 0; j < numCols; j++)
+                {
+                    if (energyMap[i, j] == '#')
+                    {
+                        numEnergized++;
+                    }
+                }
+            }
 
             return numEnergized.ToString();
         }
@@ -248,10 +180,59 @@ namespace AdventOfCode2023.PuzzleSolver
             throw new NotImplementedException();
         }
 
+        private static Beam GetNextBeam(Point position, BeamDirection direction, int maxX, int maxY)
+        {
+            switch (direction)
+            {
+                case BeamDirection.Left:
+                    if (position.Y > 0)
+                    {
+                        return new Beam { Location = new Point(position.X, position.Y - 1), Direction = direction };
+                    }
+
+                    break;
+
+                case BeamDirection.Right:
+                    if (position.Y < maxY - 1)
+                    {
+                        return new Beam { Location = new Point(position.X, position.Y + 1), Direction = direction };
+                    }
+
+                    break;
+
+                case BeamDirection.Up:
+                    if (position.X > 0)
+                    {
+                        return new Beam { Location = new Point(position.X - 1, position.Y), Direction = direction };
+                    }
+
+                    break;
+
+                case BeamDirection.Down:
+                    if (position.X < maxX - 1)
+                    {
+                        return new Beam { Location = new Point(position.X + 1, position.Y), Direction = direction };
+                    }
+
+                    break;
+
+                default:
+                    throw new ArgumentException($"Unexpected direction {direction}.");
+
+            }
+
+            return null;
+        }
+
         private static void UpdateBeamMap(char[,] map, Beam beam)
         {
             int i = beam.Location.X;
             int j = beam.Location.Y;
+
+            if (map[i, j] == '/' || map[i, j] == '\\' || map[i, j] == '|' || map[i, j] == '-')
+            {
+                return;
+            }
 
             if (map[i, j] == 'n')
             {
@@ -304,7 +285,7 @@ namespace AdventOfCode2023.PuzzleSolver
         }
     }
 
-    internal struct Beam
+    internal class Beam
     {
         public Point Location { get; set; }
 

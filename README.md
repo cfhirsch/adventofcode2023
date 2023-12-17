@@ -198,3 +198,10 @@ Very straightforward. I'll let the code speak for itself.
 
 ### Part Two:
 Also straightforward, as long as one follows the instructions carefully :).
+
+## Dec 16
+
+### Part One:
+Kind of having an off day. The approach is straightforward, I just kept making mistakes with respect to updating the coordinates of moving beams correctly.
+I also couldn't figure out how to know when I didn't need to iterate any more; I ended up experimenting with my puzzle input to figure out a minimal number
+of steps to run to get the correct answer.

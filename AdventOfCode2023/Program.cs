@@ -15,7 +15,7 @@ namespace AdventOfCode2023
 
                     try
                     {
-                        string part1Solution = solver.SolvePartOne(test: true);
+                        string part1Solution = solver.SolvePartOne(test: false);
                         Console.WriteLine($"Solution to Day {i}, Part One: {part1Solution}.");
                     }
                     catch (NotImplementedException)
