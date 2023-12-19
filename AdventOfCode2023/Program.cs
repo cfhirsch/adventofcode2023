@@ -7,7 +7,7 @@ namespace AdventOfCode2023
     {
         static void Main(string[] args)
         {
-            for (int i = 17; i <= 17; i++)
+            for (int i = 18; i <= 18; i++)
             {
                 try
                 {
@@ -15,7 +15,7 @@ namespace AdventOfCode2023
 
                     try
                     {
-                        string part1Solution = solver.SolvePartOne(test: true);
+                        string part1Solution = solver.SolvePartOne(test: false);
                         Console.WriteLine($"Solution to Day {i}, Part One: {part1Solution}.");
                     }
                     catch (NotImplementedException)
