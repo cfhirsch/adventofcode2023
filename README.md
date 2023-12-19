@@ -209,3 +209,17 @@ of steps to run to get the correct answer.
 ### Part Two:
 UPDATE: Duh, I needed to be using a queue and, as with the solution to many of Advent puzzles, a breadth first search. We've visited a node if location and direction
 are the same. Once I made those changes I got the solution to part two as well. Although it runs a tiny bit slower than I would like.
+
+## Dec 17
+
+### Part One:
+This one is kicking my ass. It's not a simple shortest path problem because of the path dependence. That is, the shortest path from any given block to the target
+is not just a function of the edge weights along any path from block to target, it also depends on how many steps we have been travelling in the current direction,
+which is a property of the path that we have been following up to this point. If we had path independence, then for any given block that we are looking at, we only 
+need to focus finding the shortest path to the target from the current block. Now it's find the shortest path from the current block to the target, GIVEN THAT 
+WE CAN ONLY TRAVEL 3 - x steps in the current direction of travel, where x is the number of steps in the current direction that we have already taken up to this block.
+Right now the constraint that we can't immediately reverse direction doesn't seem important; we wouldn't want to do that to find a shortest path anyway.
+
+So, let SP(p, dir, x) = the shortest path from p to the target block, given that we are travelling in direction dir, and that we have already travelled x steps in direction
+dir.
+

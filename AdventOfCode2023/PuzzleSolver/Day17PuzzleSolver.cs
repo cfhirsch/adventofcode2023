@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
-using System.Net.NetworkInformation;
+using System.Security.Cryptography;
 using AdventOfCode2023.Utilities;
 
 namespace AdventOfCode2023.PuzzleSolver
@@ -12,7 +12,7 @@ namespace AdventOfCode2023.PuzzleSolver
         public string SolvePartOne(bool test = false)
         {
             char[,] map = PuzzleReader.ReadMap(17, test);
-            int shortest = FindShortestPath(map);
+            int shortest = ShortestPath(map);
             return shortest.ToString();
         }
 
@@ -21,124 +21,201 @@ namespace AdventOfCode2023.PuzzleSolver
             throw new NotImplementedException();
         }
 
-        private static int FindShortestPath(char[,] map)
+        private static int ShortestPath(char[,] map)
         {
             int numRows = map.GetLength(0);
             int numCols = map.GetLength(1);
 
-            var dist = new Dictionary<Point, int>();
-            var prev = new Dictionary<Point, Point>();
-            var queue = new PriorityQueue<CityBlock>();
-            for (int i = 0; i < numRows; i++)
+            var startingPoint = new Point(0, 0);
+            var stack = new Stack<CityBlock>();
+
+            var sub1 = new CityBlock { Location = startingPoint, Direction = CityDirection.Right };
+            var sub2 = new CityBlock { Location = startingPoint, Direction = CityDirection.Down };
+
+            stack.Push(sub1);
+            stack.Push(sub2);
+
+            var memoized = new Dictionary<string, int>();
+
+            while (stack.Count > 0)
             {
-                for (int j = 0; j < numCols; j++)
+                Console.SetCursorPosition(10, 0);
+                Console.WriteLine($"Stack size: {stack.Count}");
+                Console.WriteLine($"Subproblems solved: {memoized.Count}");
+                CityBlock current = stack.Pop();
+
+                string key = current.ToString();
+
+                // Are we at the end?
+                if (current.Location == new Point(numRows - 1, numCols - 1))
                 {
-                    if (!(i == 0 && j == 0))
-                    {
-                        var pt = new Point(i, j);
-                        dist[pt] = Int32.MaxValue;
-                        queue.Enqueue(new CityBlock { Location = pt, Distance = Int32.MaxValue });
-                    }
+                    memoized[key] = 0;
                 }
-            }
-
-            var source = new Point(0, 0);
-            dist[source] = 0;
-            queue.Enqueue(new CityBlock { Location = source, Distance = 0 });
-
-            while (queue.Count() > 0)
-            {
-                CityBlock current = queue.Dequeue();
-                foreach (Tuple<Point, CityDirection> neighbor in GetNeighbors(current.Location, numRows, numCols))
+                else
                 {
-                    // We can't reverse direction.
-                    if (prev.ContainsKey(current.Location) && prev[current.Location] == neighbor.Item1)
+                    var subproblems = new List<CityBlock>();
+
+                    // Figure out the subproblems.
+                    foreach (CityDirection direction in Enum.GetValues(typeof(CityDirection)))
                     {
-                        continue;
+                        if (direction == CityDirection.None)
+                        {
+                            continue;
+                        }
+
+                        // We can't go back the way we came.
+                        if (direction == Opposite(current.Direction))
+                        {
+                            continue;
+                        }
+
+                        // We can go at most three blocks in one direction.
+                        if (direction == current.Direction && current.StepsInDirection == 3)
+                        {
+                            continue;
+                        }
+
+                        Point? pt = GetNeighbor(current.Location, direction, numRows, numCols);
+                        if (pt.HasValue)
+                        {
+                            var neighbor = new CityBlock
+                            {
+                                Location = pt.Value,
+                                Direction = direction,
+                                StepsInDirection = direction == current.Direction ? current.StepsInDirection + 1 : 1
+                            };
+
+                            string neighborKey = neighbor.ToString();
+
+                            if (memoized.ContainsKey(neighborKey))
+                            {
+                                neighbor.Distance = memoized[neighborKey];
+                            }
+
+                            subproblems.Add(neighbor);
+                        }
                     }
 
-                    // We can't go more than 3 steps in one direction.
-                    if (neighbor.Item2 == current.Direction && current.StepsInDirection >= 3)
+                    if (subproblems.All(x => x.Distance.HasValue))
                     {
-                        continue;
-                    }
+                        string currentKey = current.ToString();
+                        int minDistance = Int32.MaxValue;
+                        foreach (CityBlock subproblem in subproblems)
+                        {
+                            int dist = Int32.Parse(map[subproblem.Location.X, subproblem.Location.Y].ToString()) +
+                                subproblem.Distance.Value;
 
-                    CityBlock next = queue.Data.FirstOrDefault(b => b.Location == neighbor.Item1);
+                            if (dist < minDistance)
+                            {
+                                minDistance = dist;
+                            }
+                        }
 
-                    if (next == null)
-                    {
-                        continue;
-                    }
-
-                    next.Direction = neighbor.Item2;
-                    if (neighbor.Item2 != current.Direction)
-                    {
-                        next.StepsInDirection = 1;
+                        memoized[currentKey] = minDistance;
                     }
                     else
                     {
-                        next.StepsInDirection = current.StepsInDirection + 1;
-                    }
-
-                    int alt = current.Distance + Int32.Parse(map[next.Location.X, next.Location.Y].ToString());
-                    if (alt < next.Distance)
-                    {
-                        next.Distance = alt;
-                        dist[next.Location] = alt;
-                        queue.Reprioritize(next);
-                        prev[next.Location] = current.Location;
+                        stack.Push(current);
+                        foreach (CityBlock subproblem in subproblems.Where(p => !p.Distance.HasValue))
+                        {
+                            stack.Push(subproblem);
+                        }
                     }
                 }
             }
 
-            var now = new Point(numRows - 1, numCols - 1);
-            while (now != source)
-            {
-                Console.WriteLine(now);
-                now = prev[now];
-            }
+            string sub1Key = sub1.ToString();
+            string sub2Key = sub2.ToString();
 
-            return dist[new Point(numRows - 1, numCols - 1)];
+            return Math.Min(memoized[sub1Key], memoized[sub2Key]);
         }
 
-        private static IEnumerable<Tuple<Point, CityDirection>> GetNeighbors(Point current, int maxX, int maxY)
+
+        private static CityDirection Opposite(CityDirection dir)
         {
-            if (current.X > 0)
+            switch (dir)
             {
-                yield return new Tuple<Point, CityDirection>(new Point(current.X - 1, current.Y), CityDirection.Up);
+                case CityDirection.Up:
+                    return CityDirection.Down;
+
+                case CityDirection.Down:
+                    return CityDirection.Up;
+
+                case CityDirection.Left:
+                    return CityDirection.Right;
+
+                case CityDirection.Right:
+                    return CityDirection.Left;
+
+                default:
+                    throw new ArgumentException($"Unexpected direction {dir}.");
+            }
+        }
+
+        private static Point? GetNeighbor(Point current, CityDirection dir, int maxX, int maxY)
+        {
+            switch (dir)
+            {
+                case CityDirection.Up:
+                    if (current.X > 0)
+                    {
+                        return new Point(current.X - 1, current.Y);
+                    }
+
+                    break;
+
+                case CityDirection.Down:
+                    if (current.X < maxX - 1)
+                    {
+                        return new Point(current.X + 1, current.Y);
+                    }
+
+                    break;
+
+                case CityDirection.Left:
+                    if (current.Y > 0)
+                    {
+                        return new Point(current.X, current.Y - 1);
+                    }
+
+                    break;
+
+                case CityDirection.Right:
+                    if (current.Y < maxY - 1)
+                    {
+                        return new Point(current.X, current.Y + 1);
+                    }
+
+                    break;
+
+                default:
+                    throw new ArgumentException($"Unexpected dir {dir}.");
+
             }
 
-            if (current.X < maxX  - 1)
-            {
-                yield return new Tuple<Point, CityDirection>(new Point(current.X + 1, current.Y), CityDirection.Down);
-            }
-
-            if (current.Y > 0)
-            {
-                yield return new Tuple<Point, CityDirection>(new Point(current.X, current.Y - 1), CityDirection.Left);
-            }
-
-            if (current.Y < maxY - 1)
-            {
-                yield return new Tuple<Point, CityDirection>(new Point(current.X, current.Y + 1), CityDirection.Right);
-            }
+            return null;
         }
     }
 
-    internal class CityBlock : IComparable<CityBlock>
+    internal class CityBlock
     {
         public Point Location { get; set; }
 
-        public int Distance { get; set; }
-
-        public int CompareTo(CityBlock other)
-        {
-            return this.Distance.CompareTo(other.Distance);
-        }
+        public int? Distance { get; set; }
 
         public CityDirection Direction { get; set; }
 
         public int StepsInDirection { get; set; }
+
+        public override int GetHashCode()
+        {
+            return this.Location.GetHashCode() ^ this.Distance.GetHashCode() ^ this.StepsInDirection.GetHashCode();
+        }
+
+        public override string ToString()
+        {
+            return $"({this.Location.X},{this.Location.Y}),{this.Direction},{this.StepsInDirection}";
+        }
     }
 
     internal enum CityDirection
