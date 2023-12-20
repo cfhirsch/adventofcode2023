@@ -296,7 +296,7 @@ namespace AdventOfCode2023.PuzzleSolver
                     break;
 
                 case Comparator.LessThanOrEqualTo:
-                    newSets[this.Left] = newSets[this.Left].Where(x => x >= this.Value).ToHashSet();
+                    newSets[this.Left] = newSets[this.Left].Where(x => x <= this.Value).ToHashSet();
                     break;
 
                 case Comparator.GreaterThan:
