@@ -231,3 +231,8 @@ or external). If the tile is connected via a path of '.' tiles to an external ti
 
 ### Part One:
 Straightforward. Just wrote a parser to follow the rules and got the answer first try.
+
+## Day 20
+### Part One:
+Fairly straightforward, although it took a little bit of thought to get to using a queue to make sure the signals are sequenced properly. I had to run my puzzle input for 1000
+cycles to get the answer; if there's a cycle it's much larger than 1000 button presses.
