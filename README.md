@@ -218,6 +218,10 @@ at other people's solutions, was likely overkill. The node state consists of pos
 The method to get neighbors tries out turning right. turning left, and, if number of steps taken in current direction is less than three, going foward (subject to bounds
 checking of course).
 
+### Part Two:
+Again, my solution is much slower than I would like (took a minute or two). But with some tweaks for the new movement rules, my solution found the correct answer For
+Part Two as well.
+
 ## Dec 18
 
 ### Part One:

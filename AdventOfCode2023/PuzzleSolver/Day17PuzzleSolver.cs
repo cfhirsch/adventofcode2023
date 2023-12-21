@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
-using System.Runtime.Remoting.Messaging;
 using AdventOfCode2023.Utilities;
 
 namespace AdventOfCode2023.PuzzleSolver
@@ -18,10 +16,12 @@ namespace AdventOfCode2023.PuzzleSolver
 
         public string SolvePartTwo(bool test = false)
         {
-            throw new NotImplementedException();
+            char[,] map = PuzzleReader.ReadMap(17, test);
+            int shortest = ShortestPath(map, test, isPartTwo: true);
+            return shortest.ToString();
         }
 
-        private static int ShortestPath(char[,] map, bool test)
+        private static int ShortestPath(char[,] map, bool test, bool isPartTwo = false)
         {
             int numRows = map.GetLength(0);
             int numCols = map.GetLength(1);
@@ -44,6 +44,7 @@ namespace AdventOfCode2023.PuzzleSolver
             var fScores = new Dictionary<string, int>();
             var gScores = new Dictionary<string, int>();
 
+            int maxSteps = isPartTwo ? 10 : 3;
             for (int i = 0; i < numRows; i++)
             {
                 for (int j = 0; j < numCols; j++)
@@ -55,7 +56,7 @@ namespace AdventOfCode2023.PuzzleSolver
                             continue;
                         }
 
-                        for (int k = 0; k <= 3; k++)
+                        for (int k = 0; k <= maxSteps; k++)
                         {
                             if (k == 0 && (i > 0 || j > 0))
                             {
@@ -90,6 +91,25 @@ namespace AdventOfCode2023.PuzzleSolver
             {
                 CityBlock current = openSet.Dequeue();
 
+                bool maxChanged = false;
+                if (current.Location.X > maxX)
+                {
+                    maxX = current.Location.X;
+                    maxChanged = true;
+                }
+
+                if (current.Location.Y > maxY)
+                {
+                    maxY = current.Location.Y;
+                    maxChanged = true;
+                }
+
+                if (maxChanged)
+                {
+                    Console.SetCursorPosition(0, 10);
+                    Console.WriteLine($"maxX = {maxX}, maxY = {maxY}.");
+                }
+
                 if (current.Location == target)
                 {
                     if (test)
@@ -102,7 +122,9 @@ namespace AdventOfCode2023.PuzzleSolver
                     break;
                 }
 
-                foreach (CityBlock neighbor in GetNeighbors(current, numRows, numCols))
+                IEnumerable<CityBlock> neighbors = isPartTwo ? GetNeighborsPartTwo(current, numRows, numCols) : GetNeighbors(current, numRows, numCols);
+
+                foreach (CityBlock neighbor in neighbors)
                 {
                     int tentativeGScore = gScores[current.ToString()] + Int32.Parse(map[neighbor.Location.X, neighbor.Location.Y].ToString());
                     if (tentativeGScore < gScores[neighbor.ToString()])
@@ -211,6 +233,45 @@ namespace AdventOfCode2023.PuzzleSolver
                 if (InBounds(nextPoint, maxX, maxY))
                 {
                    neighbor = new CityBlock { Location = nextPoint, Direction = block.Direction, StepsInDirection = stepsInDirection };
+                    yield return neighbor;
+                }
+            }
+        }
+
+        private static IEnumerable<CityBlock> GetNeighborsPartTwo(CityBlock block, int maxX, int maxY)
+        {
+            Point point = block.Location;
+
+            Point nextPoint;
+            CityDirection cityDirection;
+            CityBlock neighbor;
+
+            // Turn left or right if we've moved atleast 4 blocks in current direction.
+            if (block.StepsInDirection >= 4)
+            {
+                (cityDirection, nextPoint) = TurnLeft(block.Direction, point);
+                if (InBounds(nextPoint, maxX, maxY))
+                {
+                    neighbor = new CityBlock { Location = nextPoint, Direction = cityDirection, StepsInDirection = 1 };
+                    yield return neighbor;
+                }
+
+                (cityDirection, nextPoint) = TurnRight(block.Direction, point);
+                if (InBounds(nextPoint, maxX, maxY))
+                {
+                    neighbor = new CityBlock { Location = nextPoint, Direction = cityDirection, StepsInDirection = 1 };
+                    yield return neighbor;
+                }
+            }
+
+            // Go forward if we've moved at most 10 blocks in the given direction.
+            if (block.StepsInDirection < 10)
+            {
+                int stepsInDirection = block.StepsInDirection + 1;
+                nextPoint = GoForward(block.Direction, point);
+                if (InBounds(nextPoint, maxX, maxY))
+                {
+                    neighbor = new CityBlock { Location = nextPoint, Direction = block.Direction, StepsInDirection = stepsInDirection };
                     yield return neighbor;
                 }
             }
