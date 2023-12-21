@@ -230,6 +230,10 @@ I ended up using a similar approach to Day 10 to calculate the number of interio
 I seed a list of tiles I know are external to the loop. The for each tile in the array, I do a depth first search (I skip this search if I already know the tile is internal
 or external). If the tile is connected via a path of '.' tiles to an external tile, than it's external. Otherwise it's internal. Then I could the number of internal tiles.
 
+### Part Two:
+My approach in Part One certainly does not scale for this part. I ended up cribbing from https://github.com/mnvr/advent-of-code-2023/blob/main/18.swift; only thing I did here
+was do the trivial port into C#.
+
 ## Dec 19
 
 ### Part One:
