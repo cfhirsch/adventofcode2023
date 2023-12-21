@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
-using System.Security.Cryptography;
+using System.Runtime.Remoting.Messaging;
 using AdventOfCode2023.Utilities;
 
 namespace AdventOfCode2023.PuzzleSolver
@@ -12,7 +12,7 @@ namespace AdventOfCode2023.PuzzleSolver
         public string SolvePartOne(bool test = false)
         {
             char[,] map = PuzzleReader.ReadMap(17, test);
-            int shortest = ShortestPath(map);
+            int shortest = ShortestPath(map, test);
             return shortest.ToString();
         }
 
@@ -21,115 +21,142 @@ namespace AdventOfCode2023.PuzzleSolver
             throw new NotImplementedException();
         }
 
-        private static int ShortestPath(char[,] map)
+        private static int ShortestPath(char[,] map, bool test)
         {
             int numRows = map.GetLength(0);
             int numCols = map.GetLength(1);
-
+            
             var startingPoint = new Point(0, 0);
-            var stack = new Stack<CityBlock>();
 
-            var sub1 = new CityBlock { Location = startingPoint, Direction = CityDirection.Right };
-            var sub2 = new CityBlock { Location = startingPoint, Direction = CityDirection.Down };
-
-            stack.Push(sub1);
-            stack.Push(sub2);
-
-            var memoized = new Dictionary<string, int>();
-
-            while (stack.Count > 0)
+            var sb1 = new CityBlock
             {
-                Console.SetCursorPosition(10, 0);
-                Console.WriteLine($"Stack size: {stack.Count}");
-                Console.WriteLine($"Subproblems solved: {memoized.Count}");
-                CityBlock current = stack.Pop();
+                Location = startingPoint,
+                Direction = CityDirection.Right
+            };
 
-                string key = current.ToString();
+            var sb2 = new CityBlock
+            {
+                Location = startingPoint,
+                Direction = CityDirection.Down
+            };
 
-                // Are we at the end?
-                if (current.Location == new Point(numRows - 1, numCols - 1))
+            var cameFrom = new Dictionary<CityBlock, CityBlock>();
+            var fScores = new Dictionary<string, int>();
+            var gScores = new Dictionary<string, int>();
+
+            for (int i = 0; i < numRows; i++)
+            {
+                for (int j = 0; j < numCols; j++)
                 {
-                    memoized[key] = 0;
-                }
-                else
-                {
-                    var subproblems = new List<CityBlock>();
-
-                    // Figure out the subproblems.
-                    foreach (CityDirection direction in Enum.GetValues(typeof(CityDirection)))
+                    foreach (CityDirection dir in Enum.GetValues(typeof(CityDirection)))
                     {
-                        if (direction == CityDirection.None)
+                        if (dir == CityDirection.None)
                         {
                             continue;
                         }
 
-                        // We can't go back the way we came.
-                        if (direction == Opposite(current.Direction))
+                        for (int k = 0; k <= 3; k++)
                         {
-                            continue;
-                        }
-
-                        // We can go at most three blocks in one direction.
-                        if (direction == current.Direction && current.StepsInDirection == 3)
-                        {
-                            continue;
-                        }
-
-                        Point? pt = GetNeighbor(current.Location, direction, numRows, numCols);
-                        if (pt.HasValue)
-                        {
-                            var neighbor = new CityBlock
+                            if (k == 0 && (i > 0 || j > 0))
                             {
-                                Location = pt.Value,
-                                Direction = direction,
-                                StepsInDirection = direction == current.Direction ? current.StepsInDirection + 1 : 1
-                            };
-
-                            string neighborKey = neighbor.ToString();
-
-                            if (memoized.ContainsKey(neighborKey))
-                            {
-                                neighbor.Distance = memoized[neighborKey];
+                                continue;
                             }
 
-                            subproblems.Add(neighbor);
-                        }
-                    }
+                            string key = $"({i},{j}),{dir},{k}";
 
-                    if (subproblems.All(x => x.Distance.HasValue))
-                    {
-                        string currentKey = current.ToString();
-                        int minDistance = Int32.MaxValue;
-                        foreach (CityBlock subproblem in subproblems)
-                        {
-                            int dist = Int32.Parse(map[subproblem.Location.X, subproblem.Location.Y].ToString()) +
-                                subproblem.Distance.Value;
-
-                            if (dist < minDistance)
-                            {
-                                minDistance = dist;
-                            }
-                        }
-
-                        memoized[currentKey] = minDistance;
-                    }
-                    else
-                    {
-                        stack.Push(current);
-                        foreach (CityBlock subproblem in subproblems.Where(p => !p.Distance.HasValue))
-                        {
-                            stack.Push(subproblem);
+                            fScores[key] = gScores[key] = Int32.MaxValue;
                         }
                     }
                 }
             }
 
-            string sub1Key = sub1.ToString();
-            string sub2Key = sub2.ToString();
+            sb1.GScore = sb2.GScore = 0;
+            sb1.FScore = sb2.FScore = numRows - 1 + numCols - 1;
 
-            return Math.Min(memoized[sub1Key], memoized[sub2Key]);
+            var openSet = new PriorityQueue<CityBlock>();
+
+            gScores[sb1.ToString()] = gScores[sb2.ToString()] = 0;
+            fScores[sb1.ToString()] = fScores[sb1.ToString()] = numRows - 1 + numCols - 1;
+
+            openSet.Enqueue(sb1);
+            openSet.Enqueue(sb2);
+
+            var target = new Point(numRows - 1, numCols - 1);
+
+            int minCost = Int32.MaxValue;
+
+            int maxX = 0, maxY = 0;
+            while (openSet.Count() > 0)
+            {
+                CityBlock current = openSet.Dequeue();
+
+                if (current.Location == target)
+                {
+                    if (test)
+                    {
+                        ReconstructPath(map, cameFrom, current);
+                    }
+
+                    minCost = current.GScore;
+
+                    break;
+                }
+
+                foreach (CityBlock neighbor in GetNeighbors(current, numRows, numCols))
+                {
+                    int tentativeGScore = gScores[current.ToString()] + Int32.Parse(map[neighbor.Location.X, neighbor.Location.Y].ToString());
+                    if (tentativeGScore < gScores[neighbor.ToString()])
+                    {
+                        cameFrom[neighbor] = current;
+                        gScores[neighbor.ToString()] = neighbor.GScore = tentativeGScore;
+                        fScores[neighbor.ToString()] = neighbor.FScore = tentativeGScore + (numRows - neighbor.Location.X - 1) + (numCols - neighbor.Location.Y - 1);
+                        openSet.Enqueue(neighbor);
+                    }
+                }
+            }
+                
+            return minCost;
         }
 
+        private static void ReconstructPath(
+            char[,] map,
+            Dictionary<CityBlock, CityBlock> cameFrom,
+            CityBlock current)
+        {
+            map[current.Location.X, current.Location.Y] = CityDirectionToString(current.Direction); 
+
+            while (cameFrom.ContainsKey(current))
+            {
+                current = cameFrom[current];
+                map[current.Location.X, current.Location.Y] = CityDirectionToString(current.Direction);
+            }
+
+            ConsoleUtilities.PrintMap(map);
+        }
+
+        private static char CityDirectionToString(CityDirection dir)
+        {
+            switch (dir)
+            {
+                case CityDirection.None:
+                    return '.';
+
+                case CityDirection.Left:
+                    return '<';
+
+                case CityDirection.Right:
+                    return '>';
+
+                case CityDirection.Up:
+                    return '^';
+
+                case CityDirection.Down:
+                    return 'v';
+
+                default:
+                    throw new ArgumentException($"Unexpected direction {dir}.");
+            }
+        }
 
         private static CityDirection Opposite(CityDirection dir)
         {
@@ -152,64 +179,138 @@ namespace AdventOfCode2023.PuzzleSolver
             }
         }
 
-        private static Point? GetNeighbor(Point current, CityDirection dir, int maxX, int maxY)
+        private static IEnumerable<CityBlock> GetNeighbors(CityBlock block, int maxX, int maxY)
+        {
+            Point point = block.Location;
+
+            Point nextPoint;
+            CityDirection cityDirection;
+            CityBlock neighbor;
+
+            // Turn left.
+            (cityDirection, nextPoint) = TurnLeft(block.Direction, point);
+            if (InBounds(nextPoint, maxX, maxY))
+            {
+                neighbor = new CityBlock { Location = nextPoint, Direction = cityDirection, StepsInDirection = 1 };
+                yield return neighbor;
+            }
+
+            // Turn right.
+            (cityDirection, nextPoint) = TurnRight(block.Direction, point);
+            if (InBounds(nextPoint, maxX, maxY))
+            {
+                neighbor = new CityBlock { Location = nextPoint, Direction = cityDirection, StepsInDirection = 1 };
+                yield return neighbor;
+            }
+
+            // Go forward if we can.
+            if (block.StepsInDirection < 3)
+            {
+                int stepsInDirection = block.StepsInDirection + 1;
+                nextPoint = GoForward(block.Direction, point);
+                if (InBounds(nextPoint, maxX, maxY))
+                {
+                   neighbor = new CityBlock { Location = nextPoint, Direction = block.Direction, StepsInDirection = stepsInDirection };
+                    yield return neighbor;
+                }
+            }
+        }
+
+        private static bool InBounds(Point pt, int maxX, int maxY)
+        {
+            return pt.X >= 0 && pt.X < maxX && pt.Y >= 0 && pt.Y < maxY;
+        }
+
+        private static Point GoForward(CityDirection dir, Point pt)
         {
             switch (dir)
             {
                 case CityDirection.Up:
-                    if (current.X > 0)
-                    {
-                        return new Point(current.X - 1, current.Y);
-                    }
-
-                    break;
+                    return new Point(pt.X - 1, pt.Y);
 
                 case CityDirection.Down:
-                    if (current.X < maxX - 1)
-                    {
-                        return new Point(current.X + 1, current.Y);
-                    }
-
-                    break;
+                    return new Point(pt.X + 1, pt.Y);
 
                 case CityDirection.Left:
-                    if (current.Y > 0)
-                    {
-                        return new Point(current.X, current.Y - 1);
-                    }
-
-                    break;
+                    return new Point(pt.X, pt.Y - 1);
 
                 case CityDirection.Right:
-                    if (current.Y < maxY - 1)
-                    {
-                        return new Point(current.X, current.Y + 1);
-                    }
-
-                    break;
+                    return new Point(pt.X, pt.Y + 1);
 
                 default:
-                    throw new ArgumentException($"Unexpected dir {dir}.");
-
+                    throw new ArgumentException($"Unexpected direction {dir}.");
             }
+        }
 
-            return null;
+        private static (CityDirection, Point) TurnLeft(CityDirection dir, Point pt)
+        {
+            switch (dir)
+            {
+                case CityDirection.Up:
+                    return (CityDirection.Left, new Point(pt.X, pt.Y - 1));
+
+                case CityDirection.Down:
+                    return (CityDirection.Right, new Point(pt.X, pt.Y + 1));
+
+                case CityDirection.Left:
+                    return (CityDirection.Down, new Point(pt.X + 1, pt.Y));
+
+                case CityDirection.Right:
+                    return (CityDirection.Up, new Point(pt.X - 1, pt.Y));
+
+                default:
+                    throw new ArgumentException($"Unexpected direction {dir}.");
+            }
+        }
+
+        private static (CityDirection, Point) TurnRight(CityDirection dir, Point pt)
+        {
+            switch (dir)
+            {
+                case CityDirection.Up:
+                    return (CityDirection.Right, new Point(pt.X, pt.Y + 1));
+
+                case CityDirection.Down:
+                    return (CityDirection.Left, new Point(pt.X, pt.Y - 1));
+
+                case CityDirection.Left:
+                    return (CityDirection.Up, new Point(pt.X - 1, pt.Y));
+
+                case CityDirection.Right:
+                    return (CityDirection.Down, new Point(pt.X + 1, pt.Y));
+
+                default:
+                    throw new ArgumentException($"Unexpected direction {dir}.");
+            }
         }
     }
 
-    internal class CityBlock
+    internal class CityBlock : IComparable<CityBlock>
     {
+        public CityBlock()
+        {
+            this.FScore = Int32.MaxValue;
+            this.GScore = Int32.MaxValue;
+        }
+
         public Point Location { get; set; }
 
-        public int? Distance { get; set; }
+        public int FScore { get; set; }
+
+        public int GScore { get; set; }
 
         public CityDirection Direction { get; set; }
 
         public int StepsInDirection { get; set; }
 
+        public int CompareTo(CityBlock other)
+        {
+            return this.FScore.CompareTo(other.FScore);
+        }
+
         public override int GetHashCode()
         {
-            return this.Location.GetHashCode() ^ this.Distance.GetHashCode() ^ this.StepsInDirection.GetHashCode();
+            return this.Location.GetHashCode() ^ this.Direction.GetHashCode() ^ this.StepsInDirection.GetHashCode();
         }
 
         public override string ToString()

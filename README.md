@@ -212,12 +212,11 @@ are the same. Once I made those changes I got the solution to part two as well. 
 
 ## Dec 17
 
-This one is kicking my ass. It's not a simple shortest path problem because of the path dependence. That is, the shortest path from any given block to the target
-is not just a function of the edge weights along any path from block to target, it also depends on how many steps we have been travelling in the current direction,
-which is a property of the path that we have been following up to this point. If we had path independence, then for any given block that we are looking at, we only 
-need to focus finding the shortest path to the target from the current block. Now it's find the shortest path from the current block to the target, GIVEN THAT 
-WE CAN ONLY TRAVEL 3 - x steps in the current direction of travel, where x is the number of steps in the current direction that we have already taken up to this block.
-Right now the constraint that we can't immediately reverse direction doesn't seem important; we wouldn't want to do that to find a shortest path anyway.
+### Part One:
+This day took me way longer than it should have. My solution is still slower than I would like (about 5-8 seconds). I ended up using A* search, which, from looking
+at other people's solutions, was likely overkill. The node state consists of position, direction of travel, and number of steps already taken in the given direction.
+The method to get neighbors tries out turning right. turning left, and, if number of steps taken in current direction is less than three, going foward (subject to bounds
+checking of course).
 
 ## Dec 18
 
@@ -233,6 +232,7 @@ or external). If the tile is connected via a path of '.' tiles to an external ti
 Straightforward. Just wrote a parser to follow the rules and got the answer first try.
 
 ## Day 20
+
 ### Part One:
 Fairly straightforward, although it took a little bit of thought to get to using a queue to make sure the signals are sequenced properly. I had to run my puzzle input for 1000
 cycles to get the answer; if there's a cycle it's much larger than 1000 button presses.
