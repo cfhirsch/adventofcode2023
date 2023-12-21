@@ -244,3 +244,8 @@ Straightforward. Just wrote a parser to follow the rules and got the answer firs
 ### Part One:
 Fairly straightforward, although it took a little bit of thought to get to using a queue to make sure the signals are sequenced properly. I had to run my puzzle input for 1000
 cycles to get the answer; if there's a cycle it's much larger than 1000 button presses.
+
+## Day 21
+
+### Part One:
+Tricker than it seemed at first glance. I solved this with breadth-first search, where the nodes to explore were tuples contain a location and the number of steps taken.
