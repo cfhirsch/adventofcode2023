@@ -112,24 +112,6 @@ namespace AdventOfCode2023.PuzzleSolver
 
             return (Math.Abs(s) / 2) + 1; 
         }
-
-        /*func area(steps: [Step]) -> Int {
-    var px = 0, py = 0, s = 0
-    for step in steps {
-        var x, y : Int
-        switch step.direction {
-        case "R": (x, y) = (px + step.count, py)
-        case "L": (x, y) = (px - step.count, py)
-        case "U": (x, y) = (px, py - step.count)
-        case "D": (x, y) = (px, py + step.count)
-        default: fatalError()
-        }
-        s += (py + y) * (px - x)
-        s += step.count
-        (px, py) = (x, y)
-    }
-
-    return abs(s) / 2 + 1*/
     }
 
     internal struct Step

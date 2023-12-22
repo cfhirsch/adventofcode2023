@@ -239,6 +239,9 @@ was do the trivial port into C#.
 ### Part One:
 Straightforward. Just wrote a parser to follow the rules and got the answer first try.
 
+### Part Two:
+I lost the motivation to try to solve this part. I ended up cribbing the solution from https://github.com/DanaL/AdventOfCode/blob/main/2023/Day19/Program.cs.
+
 ## Day 20
 
 ### Part One:

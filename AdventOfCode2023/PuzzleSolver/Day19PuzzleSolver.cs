@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Diagnostics.Eventing.Reader;
 using System.Linq;
 using System.Text.RegularExpressions;
 using AdventOfCode2023.Utilities;
@@ -125,12 +126,10 @@ namespace AdventOfCode2023.PuzzleSolver
             return sum.ToString();
         }
 
+        // Solution to this part cribbed from https://github.com/DanaL/AdventOfCode/blob/main/2023/Day19/Program.cs.
         public string SolvePartTwo(bool test = false)
         {
-            var compReg = new Regex(@"(\w+)([<>])(\d+):(\w+)", RegexOptions.Compiled);
-
-            var workflows = new Dictionary<string, string>();
-
+            var rules = new Dictionary<string, WorkFlowStep[]>();
             foreach (string line in PuzzleReader.ReadLines(19, test))
             {
                 if (string.IsNullOrEmpty(line))
@@ -138,253 +137,208 @@ namespace AdventOfCode2023.PuzzleSolver
                     break;
                 }
 
-                int bracketPos = line.IndexOf("{");
-                workflows.Add(line.Substring(0, bracketPos),
-                              line.Substring(bracketPos + 1, line.Length - bracketPos - 2));
+                (string name, WorkFlowStep[] steps) = ParseRule(line);
+
+                rules.Add(name, steps);
             }
 
-            // Let's try looking at this as a binary tree. The key in each node is an expression.
-            // The left node corresponds to the expression being true, the other to its being false.
-            // "A" and "R" are leaf nodes. We'll form the union of sets corresponding to "A" leaf nodes.
-            string workflowKey = "in";
-
-            var expression = WorkflowToExpression(workflowKey, workflows);
-
-            var baseSet = new Dictionary<string, HashSet<int>>();
-            baseSet["x"] = Enumerable.Range(1, 4000).ToHashSet();
-            baseSet["m"] = Enumerable.Range(1, 4000).ToHashSet();
-            baseSet["a"] = Enumerable.Range(1, 4000).ToHashSet();
-            baseSet["s"] = Enumerable.Range(1, 4000).ToHashSet();
-
-            var finalSet = expression.NumThatSatisfy(baseSet);
-
-            long result = 1;
-            foreach (HashSet<int> set in finalSet.Values)
-            {
-                result *= set.Count;
-            }
-
+            ulong result = PartTwo(rules);
             return result.ToString();
         }
 
-        private Expression WorkflowToExpression(
-            string workflowKey,
-            Dictionary<string, string> workFlows)
+        internal static Field ToField(string ch)
         {
-            string[] conditions = workFlows[workflowKey].Split(',');
-            Expression prev = null;
-            Expression current = null;
-            foreach (string condition in conditions)
+            switch (ch)
             {
-                Match match = compReg.Match(condition);
+                case "x":
+                    return Field.X;
+
+                case "m":
+                    return Field.M;
+
+                case "a":
+                    return Field.A;
+
+                case "s":
+                    return Field.S;
+
+                default:
+                    throw new Exception("Hmm this shouldn't happen");
+            };
+        }
+
+        static Dictionary<Field, int> ParsePart(string line)
+        {
+            var m = Regex.Match(line, @"{x=(\d+),m=(\d+),a=(\d+),s=(\d+)}");
+            return new Dictionary<Field, int>
+            {
+                { Field.X, int.Parse(m.Groups[1].Value) }, { Field.M, int.Parse(m.Groups[2].Value) },
+                { Field.A, int.Parse(m.Groups[3].Value) }, { Field.S, int.Parse(m.Groups[4].Value) }
+            };
+        }
+
+        private static (string, WorkFlowStep[]) ParseRule(string line)
+        {
+            var steps = new List<WorkFlowStep>();
+
+            int bracketPos = line.IndexOf("{");
+            (string name, string ruleStr) = (line.Substring(0, bracketPos),
+                                            line.Substring(bracketPos + 1, line.Length - bracketPos - 2));
+
+            string[] rules = ruleStr.Split(new[] { "," }, StringSplitOptions.RemoveEmptyEntries);
+
+            foreach (string rule in rules)
+            {
+                var match = compReg.Match(rule);
                 if (match.Success)
                 {
-                    string category = match.Groups[1].Value;
-                    string comp = match.Groups[2].Value;
-                    int val = Int32.Parse(match.Groups[3].Value);
-                    string label = match.Groups[4].Value;
+                    Field f = ToField(match.Groups[1].Value);
+                    int v = Int32.Parse(match.Groups[3].Value);
 
-                    current = ComparisonRuleToExpression(category, comp, val, label, workFlows);
-                }
-                else
-                {
-                    switch (condition)
+                    switch (match.Groups[2].Value)
                     {
-                        case "R":
-                            current = new FalseExpression();
+                        case "<":
+                            steps.Add(new WorkFlowStep(f, match.Groups[4].Value, Op.LT, v));
                             break;
 
-                        case "A":
-                            current = new TrueExpression();
+                        case ">":
+                            steps.Add(new WorkFlowStep(f, match.Groups[4].Value, Op.GT, v));
                             break;
 
                         default:
-                            current = WorkflowToExpression(condition, workFlows);
-                            break;
+                            throw new ArgumentException($"Unexpected op.");
                     }
                 }
-
-                if (prev != null)
+                else
                 {
-                    var temp = new CompoundExpression
-                    {
-                        Left = prev,
-                        LogicalOperator = LogicalOperator.Or,
-                        Right = current
-                    };
-
-                    current = temp;
-                }
-
-                prev = current;
-            }
-
-            return current;
-        }
-
-        private Expression ComparisonRuleToExpression(
-            string category,
-            string comp,
-            int value,
-            string label,
-            Dictionary<string, string> workFlows)
-        {
-            var compoundExpression = new CompoundExpression();
-            var expression = new ComparisonExpression { Left = category, Value = value };
-            compoundExpression.Left = expression;
-            compoundExpression.LogicalOperator = LogicalOperator.And;
-
-            switch (comp)
-            {
-                case ">":
-                    expression.Comparator = Comparator.GreaterThan;
-                    break;
-
-                case "<":
-                    expression.Comparator = Comparator.LessThan;
-                    break;
-
-                default:
-                    throw new ArgumentException($"Unexpected comparator {comp}.");
-            }
-
-            switch (label)
-            {
-                case "R":
-                    compoundExpression.Right = new FalseExpression();
-                    break;
-
-                case "A":
-                    compoundExpression.Right = new TrueExpression();
-                    break;
-
-                default:
-                    compoundExpression.Right = WorkflowToExpression(label, workFlows);
-                    break;
-            }
-
-            return compoundExpression;
-        }
-    }
-
-    internal abstract class Expression
-    {
-        public abstract Dictionary<string, HashSet<int>> NumThatSatisfy(Dictionary<string, HashSet<int>> sets);
-    }
-
-    internal class ComparisonExpression : Expression
-    {
-        public string Left { get; set; }
-
-        public Comparator Comparator { get; set; }
-
-        public long Value { get; set; }
-
-        public override Dictionary<string, HashSet<int>> NumThatSatisfy(Dictionary<string, HashSet<int>> sets)
-        {
-            var newSets = new Dictionary<string, HashSet<int>>();
-
-            foreach (KeyValuePair<string, HashSet<int>> kvp in sets)
-            {
-                newSets.Add(kvp.Key, kvp.Value.ToHashSet());
-            }
-
-            switch (this.Comparator)
-            {
-                case Comparator.LessThan:
-                    newSets[this.Left] = newSets[this.Left].Where(x => x < this.Value).ToHashSet();
-                    break;
-
-                case Comparator.LessThanOrEqualTo:
-                    newSets[this.Left] = newSets[this.Left].Where(x => x <= this.Value).ToHashSet();
-                    break;
-
-                case Comparator.GreaterThan:
-                    newSets[this.Left] = newSets[this.Left].Where(x => x > this.Value).ToHashSet();
-                    break;
-
-                case Comparator.GreaterThanOrEqualTo:
-                    newSets[this.Left] = newSets[this.Left].Where(x => x >= this.Value).ToHashSet();
-                    break;
-
-                default:
-                    throw new ArgumentException($"Unexpected compartor {this.Comparator}.");
-            }
-
-            return newSets;
-        }
-    }
-
-    internal class CompoundExpression : Expression
-    {
-        public Expression Left { get; set; }
-
-        public LogicalOperator LogicalOperator { get; set; }
-
-        public Expression Right { get; set; }
-
-        public override Dictionary<string, HashSet<int>> NumThatSatisfy(Dictionary<string, HashSet<int>> sets)
-        {
-            Dictionary<string, HashSet<int>> left = this.Left.NumThatSatisfy(sets);
-            Dictionary<string, HashSet<int>> right = this.Right.NumThatSatisfy(sets);
-
-            var newResult = new Dictionary<string, HashSet<int>>();
-            foreach (string key in sets.Keys)
-            {
-                switch (this.LogicalOperator)
-                {
-                    case LogicalOperator.And:
-                        newResult[key] = left[key].Intersect(right[key]).ToHashSet();
-                        break;
-
-                    case LogicalOperator.Or:
-                        newResult[key] = left[key].Union(right[key]).ToHashSet();
-                        break;
-
-                    default:
-                        throw new ArgumentException($"Unexpected operator {this.LogicalOperator}");
+                    steps.Add(new WorkFlowStep(Field.Any, rule, Op.Pipe, -1));
                 }
             }
 
-            return newResult;
+            return (name, steps.ToArray());
         }
-    }
 
-    internal class FalseExpression : Expression
-    {
-        public override Dictionary<string, HashSet<int>> NumThatSatisfy(Dictionary<string, HashSet<int>> sets)
+        static string Classify(Dictionary<Field, int> part, WorkFlowStep[] steps, int s)
         {
-            return sets.Keys.ToDictionary(x => x, x => new HashSet<int>());
-        }
-    }
+            switch (steps[s].Op)
+            {
+                case Op.LT:
+                    return part[steps[s].In] < steps[s].Val ? steps[s].Out : Classify(part, steps, s + 1);
 
-    internal class TrueExpression : Expression
-    {
-        public override Dictionary<string, HashSet<int>> NumThatSatisfy(Dictionary<string, HashSet<int>> sets)
+                case Op.GT:
+                    return part[steps[s].In] > steps[s].Val ? steps[s].Out : Classify(part, steps, s + 1);
+
+                case Op.Pipe:
+                    return steps[s].Out;
+
+                default:
+                    throw new Exception("Hmm this shouldn't happen");
+            };
+        }
+
+        private static List<(Dictionary<Field, PRange>, string, int)> SplitRange(Dictionary<Field, PRange> parts, WorkFlowStep step, string stepName, int stepNum)
         {
-            return sets.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.ToHashSet());
+            var result = new List<(Dictionary<Field, PRange> parts, string, int)>();
+            var pass = parts.ToDictionary(e => e.Key, e => e.Value);
+            var fail = parts.ToDictionary(e => e.Key, e => e.Value);
+            int lo, hi;
+
+            switch (step.Op)
+            {
+                case Op.LT:
+                    lo = parts[step.In].Lo;
+                    hi = parts[step.In].Hi;
+                    pass[step.In] = new PRange(lo, step.Val - 1);
+                    fail[step.In] = new PRange(step.Val, hi);
+                    result.Add((pass, step.Out, 0));
+                    result.Add((fail, stepName, stepNum + 1));
+                    break;
+                case Op.GT:
+                    lo = parts[step.In].Lo;
+                    hi = parts[step.In].Hi;
+                    pass[step.In] = new PRange(step.Val + 1, hi);
+                    fail[step.In] = new PRange(lo, step.Val);
+                    result.Add((pass, step.Out, 0));
+                    result.Add((fail, stepName, stepNum + 1));
+                    break;
+                case Op.Pipe:
+                    result.Add((parts, step.Out, 0));
+                    break;
+            }
+
+            return result;
+        }
+
+        private static ulong PartTwo(Dictionary<string, WorkFlowStep[]> rules)
+        {
+            var complete = new List<Dictionary<Field, PRange>>();
+            var initial = new Dictionary<Field, PRange>()
+            {
+                { Field.X, new PRange(1, 4000) }, { Field.M, new PRange(1, 4000) },
+                { Field.A, new PRange(1, 4000) }, { Field.S, new PRange(1, 4000) }
+            };
+
+            var q = new Queue<(Dictionary<Field, PRange>, string, int)>();
+            q.Enqueue((initial, "in", 0));
+
+            while (q.Count > 0)
+            {
+                var (parts, name, stepNum) = q.Dequeue();
+                var rule = rules[name];
+                var step = rule[stepNum];
+                foreach (var res in SplitRange(parts, step, name, stepNum))
+                {
+                    if (res.Item2 == "A")
+                        complete.Add(res.Item1);
+                    else if (res.Item2 != "R")
+                        q.Enqueue(res);
+                }
+            }
+
+            ulong total = 0UL;
+            foreach (var r in complete)
+            {
+                ulong a = Convert.ToUInt64(r[Field.X].Hi - r[Field.X].Lo + 1);
+                ulong b = Convert.ToUInt64(r[Field.M].Hi - r[Field.M].Lo + 1);
+                ulong c = Convert.ToUInt64(r[Field.A].Hi - r[Field.A].Lo + 1);
+                ulong d = Convert.ToUInt64(r[Field.S].Hi - r[Field.S].Lo + 1);
+                total += a * b * c * d;
+            }
+
+            return total;
         }
     }
 
-    internal enum LogicalOperator
+    enum Op { LT, GT, Pipe }
+
+    internal enum Field { X, M, A, S, Any }
+
+    internal struct WorkFlowStep
     {
-        None,
+        public WorkFlowStep(Field field, string outstr, Op op, int va)
+        {
+            this.In = field;
+            this.Out = outstr;
+            this.Op = op;
+            this.Val = va;
+        }
 
-        And,
+        public Field In { get; set; }
+        public string Out { get; set; }
+        public Op Op { get; set; }
 
-        Or
+        public int Val { get; set; }
     }
 
-    internal enum Comparator
+    internal struct PRange
     {
-        None,
+        public PRange(int lo, int hi)
+        {
+            this.Lo = lo;
+            this.Hi = hi;
+        }
 
-        LessThan,
-
-        GreaterThan,
-
-        LessThanOrEqualTo,
-
-        GreaterThanOrEqualTo
+        public int Lo { get; set; }
+        public int Hi { get; set; }
     }
 }
