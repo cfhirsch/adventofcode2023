@@ -248,6 +248,13 @@ I lost the motivation to try to solve this part. I ended up cribbing the solutio
 Fairly straightforward, although it took a little bit of thought to get to using a queue to make sure the signals are sequenced properly. I had to run my puzzle input for 1000
 cycles to get the answer; if there's a cycle it's much larger than 1000 button presses.
 
+### Part Two:
+I wrote the code for this myself, but got the idea for the solution from dgalanti1's post [here](https://www.reddit.com/r/adventofcode/comments/18mmfxb/comment/keivqu3/?utm_source=share&utm_medium=web3x&utm_name=web3xcss&utm_term=1&utm_content=share_button).
+
+Namely, "rx" receives a pulse from a single Conjunction module. That module will fire a low pulse when all of its inputs are high. So build up a dictionary of modules that feed
+into this penultimate Conjunction module, and keep pressing buttons until we've figured out the number of button presses that will get each of the inputs to send a high pulse.
+The answer is the product of all of these numbers.
+
 ## Day 21
 
 ### Part One:

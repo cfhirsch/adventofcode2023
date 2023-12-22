@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data.SqlClient;
-using System.Diagnostics.Eventing.Reader;
 using System.Linq;
 using AdventOfCode2023.Utilities;
 
@@ -10,6 +8,16 @@ namespace AdventOfCode2023.PuzzleSolver
     internal class Day20PuzzleSolver : IPuzzleSolver
     {
         public string SolvePartOne(bool test = false)
+        {
+            return Solve(test, isPartTwo: false);
+        }
+
+        public string SolvePartTwo(bool test = false)
+        {
+            return Solve(test, isPartTwo: true);
+        }
+
+        private static string Solve(bool test, bool isPartTwo)
         {
             var components = new Dictionary<string, Component>();
             var lines = PuzzleReader.ReadLines(20, test).ToList();
@@ -56,7 +64,7 @@ namespace AdventOfCode2023.PuzzleSolver
 
                     if (!components.ContainsKey(key))
                     {
-                        components.Add(key, new Output {  Label = key } );
+                        components.Add(key, new Output { Label = key });
                     }
 
                     Component destination = components[key];
@@ -68,68 +76,108 @@ namespace AdventOfCode2023.PuzzleSolver
                 }
             }
 
-            long numLowPulses = 0;
-            long numHighPulses = 0;
-            bool flipFlopOn = true;
-            int numCycles = 0;
-            while (flipFlopOn && numCycles < 1000)
+            if (!isPartTwo)
             {
-                numCycles++;
-                // Press the button.
-                var queue = new Queue<Tuple<Component, Component, bool>>();
-                queue.Enqueue(new Tuple<Component, Component, bool>(null, components["broadcaster"], false));
-                while (queue.Count > 0)
+                long numLowPulses = 0;
+                long numHighPulses = 0;
+                bool flipFlopOn = true;
+                int numButtonPresses = 0;
+                while (flipFlopOn && numButtonPresses < 1000)
                 {
-                    Tuple<Component, Component, bool> current = queue.Dequeue();
-                    Component source = current.Item1;
-                    Component destiation = current.Item2;
-                    bool pulse = current.Item3;
-                    if (pulse)
+                    numButtonPresses++;
+                    // Press the button.
+                    var queue = new Queue<Tuple<Component, Component, bool>>();
+                    queue.Enqueue(new Tuple<Component, Component, bool>(null, components["broadcaster"], false));
+                    while (queue.Count > 0)
                     {
-                        numHighPulses++;
-                    }
-                    else
-                    {
-                        numLowPulses++;
-                    }
-
-                    foreach (Tuple<Component, bool> tuple in destiation.Pulse(source, pulse))
-                    {
-                        if (test)
+                        Tuple<Component, Component, bool> current = queue.Dequeue();
+                        Component source = current.Item1;
+                        Component destiation = current.Item2;
+                        bool pulse = current.Item3;
+                        if (pulse)
                         {
-                            string pulseStr = tuple.Item2 ? "high" : "low";
-                            //string sourceStr = (source == null) ? "button" : source.Label;
-                            Console.WriteLine($"{destiation.Label} -{pulseStr}-> {tuple.Item1.Label}");
+                            numHighPulses++;
+                        }
+                        else
+                        {
+                            numLowPulses++;
                         }
 
-                        queue.Enqueue(new Tuple<Component, Component, bool>(destiation, tuple.Item1, tuple.Item2));
-                    }
-                }
+                        foreach (Tuple<Component, bool> tuple in destiation.Pulse(source, pulse))
+                        {
+                            if (test)
+                            {
+                                string pulseStr = tuple.Item2 ? "high" : "low";
+                                //string sourceStr = (source == null) ? "button" : source.Label;
+                                Console.WriteLine($"{destiation.Label} -{pulseStr}-> {tuple.Item1.Label}");
+                            }
 
-                flipFlopOn = false;
-                foreach (KeyValuePair<string, Component> kvp in components)
-                {
-                    if (kvp.Value is FlipFlop && ((FlipFlop)kvp.Value).State)
+                            queue.Enqueue(new Tuple<Component, Component, bool>(destiation, tuple.Item1, tuple.Item2));
+                        }
+                    }
+
+                    flipFlopOn = false;
+                    foreach (KeyValuePair<string, Component> kvp in components)
                     {
-                        flipFlopOn = true;
-                        break;
+                        if (kvp.Value is FlipFlop && ((FlipFlop)kvp.Value).State)
+                        {
+                            flipFlopOn = true;
+                            break;
+                        }
                     }
-                    //{
-                      //  Console.WriteLine($"Flipflip {kvp.Key} state = {((FlipFlop)kvp.Value).State}.");
-                    //}
+
                 }
 
-                //Console.WriteLine();
+                numLowPulses *= (1000 / numButtonPresses);
+                numHighPulses *= (1000 / numButtonPresses);
+                return (numLowPulses * numHighPulses).ToString();
             }
+            else
+            {
+                var lowPulseDict = new Dictionary<string, long>();
 
-            numLowPulses *= (1000 / numCycles);
-            numHighPulses *= (1000 / numCycles);
-            return (numLowPulses * numHighPulses).ToString();
-        }
+                Component penultimate = components.First(c => c.Value.DestinationModules.Any(m => m.Label == "rx")).Value;
 
-        public string SolvePartTwo(bool test = false)
-        {
-            throw new NotImplementedException();
+                foreach (Component component in components.Where(c => c.Value.DestinationModules.Any(m => m.Label == penultimate.Label)).Select(kvp => kvp.Value))
+                {
+                    lowPulseDict[component.Label] = 0;
+                }
+
+                long numButtonPresses = 0;
+                while (lowPulseDict.Any(kvp => kvp.Value == 0))
+                {
+                    numButtonPresses++;
+                    // Press the button.
+                    var queue = new Queue<Tuple<Component, Component, bool>>();
+                    queue.Enqueue(new Tuple<Component, Component, bool>(null, components["broadcaster"], false));
+                    while (queue.Count > 0)
+                    {
+                        Tuple<Component, Component, bool> current = queue.Dequeue();
+                        Component source = current.Item1;
+                        Component destination = current.Item2;
+                        bool pulse = current.Item3;
+
+                        if (pulse && source != null && lowPulseDict.ContainsKey(source.Label) && lowPulseDict[source.Label] == 0)
+                        {
+                            Console.WriteLine($"{source.Label} sends a low pulse after {numButtonPresses} button presses.");
+                            lowPulseDict[source.Label] = numButtonPresses;
+                        }
+
+                        foreach (Tuple<Component, bool> tuple in destination.Pulse(source, pulse))
+                        {
+                            queue.Enqueue(new Tuple<Component, Component, bool>(destination, tuple.Item1, tuple.Item2));
+                        }
+                    }
+                }
+
+                long result = 1;
+                foreach (KeyValuePair<string, long> kvp in lowPulseDict)
+                {
+                    result *= kvp.Value;
+                }
+
+                return result.ToString();
+            }
         }
     }
 
