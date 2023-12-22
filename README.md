@@ -252,3 +252,11 @@ cycles to get the answer; if there's a cycle it's much larger than 1000 button p
 
 ### Part One:
 Tricker than it seemed at first glance. I solved this with breadth-first search, where the nodes to explore were tuples contain a location and the number of steps taken.
+
+## Day 22
+
+### Part One:
+Fairly straightforward, although my solution is a little slower than I would like (took a few seconds). I created a 3D Point struct, and a Brick struct that consists of Two
+3D points. One brick is adjacent to another if (1) its min Z = other minZ + 1 and (2) its X range AND its Y range overlaps with the other brick. I maintained an ordered list
+of bricks by minZ, and kept moving bricks until none could move any more. Along the way I built up a dictionary whose keys are bricks and whose values are the bricks supporting
+that brick. A brick b can be disintegrated if and only if there is no brick b' such that b is not the only element in the set of bricks that support b'. 
