@@ -266,4 +266,11 @@ Tricker than it seemed at first glance. I solved this with breadth-first search,
 Fairly straightforward, although my solution is a little slower than I would like (took a few seconds). I created a 3D Point struct, and a Brick struct that consists of Two
 3D points. One brick is adjacent to another if (1) its min Z = other minZ + 1 and (2) its X range AND its Y range overlaps with the other brick. I maintained an ordered list
 of bricks by minZ, and kept moving bricks until none could move any more. Along the way I built up a dictionary whose keys are bricks and whose values are the bricks supporting
-that brick. A brick b can be disintegrated if and only if there is no brick b' such that b is not the only element in the set of bricks that support b'. 
+that brick. A brick b can be disintegrated if and only if there is no brick b' such that b is not the only element in the set of bricks that support b'.
+
+## Day 23
+
+### Part One:
+Straightforward. I implemented a variant of breadth first search, where the queue entries are a tuple consisting of the current location, and a hashset of previously visited
+locations on the current path. The get neighbors method switches on whether the current tile is '^', '>' or '.'. If neighbor is not in the hashset of already visited tiles, 
+I enqueue a tuple consisting of that neighbor and a hashset that equals the previous hashset union the neighbor.
