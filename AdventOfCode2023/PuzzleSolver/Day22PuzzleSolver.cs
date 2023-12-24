@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using AdventOfCode2023.Utilities;
 
 namespace AdventOfCode2023.PuzzleSolver
@@ -8,6 +10,16 @@ namespace AdventOfCode2023.PuzzleSolver
     internal class Day22PuzzleSolver : IPuzzleSolver
     {
         public string SolvePartOne(bool test = false)
+        {
+            return Solve(test, partTwo: false);
+        }
+
+        public string SolvePartTwo(bool test = false)
+        {
+            return Solve(test, partTwo: true);
+        }
+
+        private static string Solve(bool test, bool partTwo)
         {
             var bricks = new List<Brick>();
             int j = 0;
@@ -31,6 +43,9 @@ namespace AdventOfCode2023.PuzzleSolver
             // supportsDict[b] will contain the set of bricks that support b.
             var supportsDict = new Dictionary<Brick, HashSet<Brick>>();
 
+            // supportedDict[b] will contain the set of brickas that b supports.
+            var supportedDict = new Dictionary<Brick, HashSet<Brick>>();
+
             bool moved = true;
             while (moved)
             {
@@ -53,6 +68,13 @@ namespace AdventOfCode2023.PuzzleSolver
                             }
 
                             supportsDict[current].Add(adjBrick);
+
+                            if (!supportedDict.ContainsKey(adjBrick))
+                            {
+                                supportedDict.Add(adjBrick, new HashSet<Brick>());
+                            }
+
+                            supportedDict[adjBrick].Add(current);
                         }
 
                         if (!adjacent)
@@ -70,33 +92,68 @@ namespace AdventOfCode2023.PuzzleSolver
             }
 
             int numBricks = 0;
-            foreach (Brick brick in bricks)
-            {
-                if (supportsDict.Any(k => k.Value.Count == 1 && k.Value.Contains(brick)))
-                {
-                    if (test)
-                    {
-                        Console.WriteLine($"Brick {brick.Label} supports bricks and cannot be removed.");
-                    }
-                }
-                else
-                {
-                    if (test)
-                    {
-                        Console.WriteLine($"Brick {brick.Label} can be removed.");
-                    }
 
-                    numBricks++;
+            if (partTwo)
+            {
+                foreach (Brick brick in bricks)
+                {
+                    int count = 0;
+                    var supportsDictCopy = supportsDict.ToDictionary(k => k.Key, k => k.Value.ToHashSet());
+                    var supportedDictCopy = supportedDict.ToDictionary(k => k.Key, k => k.Value.ToHashSet());
+
+                    var queue = new Queue<Brick>();
+                    queue.Enqueue(brick);
+
+                    var visited = new HashSet<Brick>();
+                    visited.Add(brick);
+
+                    while (queue.Count > 0)
+                    {
+                        Brick current = queue.Dequeue();
+                        if (supportedDictCopy.ContainsKey(current))
+                        {
+                            foreach (Brick b2 in supportedDictCopy[current])
+                            {
+                                supportsDictCopy[b2].Remove(current);
+                                if (!supportsDictCopy[b2].Any() && !visited.Contains(b2))
+                                {
+                                    visited.Add(b2);
+                                    count++;
+                                    queue.Enqueue(b2);
+                                }
+                            }
+                        }
+                    }
+                    
+                    numBricks += count;
+                }
+            }
+            else
+            {
+                foreach (Brick brick in bricks)
+                {
+                    if (supportsDict.Any(k => k.Value.Count == 1 && k.Value.Contains(brick)))
+                    {
+                        if (test)
+                        {
+                            Console.WriteLine($"Brick {brick.Label} supports bricks and cannot be removed.");
+                        }
+                    }
+                    else
+                    {
+                        if (test)
+                        {
+                            Console.WriteLine($"Brick {brick.Label} can be removed.");
+                        }
+
+                        numBricks++;
+                    }
                 }
             }
 
             return numBricks.ToString();
         }
 
-        public string SolvePartTwo(bool test = false)
-        {
-            throw new NotImplementedException();
-        }
 
         private static bool Adjacent(Brick b1, Brick b2)
         {

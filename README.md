@@ -272,6 +272,11 @@ Fairly straightforward, although my solution is a little slower than I would lik
 of bricks by minZ, and kept moving bricks until none could move any more. Along the way I built up a dictionary whose keys are bricks and whose values are the bricks supporting
 that brick. A brick b can be disintegrated if and only if there is no brick b' such that b is not the only element in the set of bricks that support b'.
 
+### Part Two:
+One of those ones where coming back to it later did the trick. I added a second dictionary that runs in the opposite direction from the one I created in part one; that is each key is a
+brick and the value is the set of bricks that brick supports. Then I iterated through each brick, make copies of the two dictionaries, and set up a queue. Pop a brick from the queue,
+remove it the sets of any bricks it supports. If any brick ends up with zero supports, increment the counter and add it to the queue.
+
 ## Day 23
 
 ### Part One:
