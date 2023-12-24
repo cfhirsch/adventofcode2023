@@ -274,3 +274,9 @@ that brick. A brick b can be disintegrated if and only if there is no brick b' s
 Straightforward. I implemented a variant of breadth first search, where the queue entries are a tuple consisting of the current location, and a hashset of previously visited
 locations on the current path. The get neighbors method switches on whether the current tile is '^', '>' or '.'. If neighbor is not in the hashset of already visited tiles, 
 I enqueue a tuple consisting of that neighbor and a hashset that equals the previous hashset union the neighbor.
+
+## Day 24
+
+### Part One:
+straightforward, although I kept making a bunch of dumb mistakes. Solve an equation with two unknowns of the form Ax = b, so the answer is x = A_inv * b.
+The determinant is used to calculate the inverse of A, if this is zero, the hailstone paths are parallel and will never cross.

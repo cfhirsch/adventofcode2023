@@ -112,7 +112,7 @@ namespace AdventOfCode2023.PuzzleSolver
             return false;
         }
 
-        private static bool Intersects(int start1, int end1, int start2, int end2)
+        private static bool Intersects(long start1, long end1, long start2, long end2)
         {
             if (start1 >= start2 && start1 <= end2)
             {
@@ -172,18 +172,18 @@ namespace AdventOfCode2023.PuzzleSolver
 
     internal struct Point3D : IEquatable<Point3D>
     {
-        public Point3D(int x, int y, int z)
+        public Point3D(long x, long y, long z)
         {
             this.X = x;
             this.Y = y;
             this.Z = z;
         }
 
-        public int X { get; private set; }
+        public long X { get; private set; }
 
-        public int Y { get; private set; }
+        public long Y { get; private set; }
 
-        public int Z { get; private set; }
+        public long Z { get; private set; }
 
         public bool Equals(Point3D other)
         {
