@@ -260,6 +260,10 @@ The answer is the product of all of these numbers.
 ### Part One:
 Tricker than it seemed at first glance. I solved this with breadth-first search, where the nodes to explore were tuples contain a location and the number of steps taken.
 
+### Part Two:
+Threw my hands up on this one and just ran the code from [here](https://gist.github.com/dllu/0ca7bfbd10a199f69bcec92f067ec94c#file-21-py). I did have to remember how to install modules
+in Python :).
+
 ## Day 22
 
 ### Part One:
