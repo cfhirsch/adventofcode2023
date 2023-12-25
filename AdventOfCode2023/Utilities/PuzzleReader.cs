@@ -21,7 +21,19 @@ namespace AdventOfCode2023.Utilities
             }
         }
 
-        public static char[,] ReadMap(int day, bool isTest = false)
+        public static string ReadAll(int day, bool isTest = false)
+        {
+            string fileName = isTest ? $"Dec{day}_test.txt" : $"Dec{day}.txt";
+            using (var stream = new FileStream($@"c:\docs\AdventOfCode2023\{fileName}", FileMode.Open))
+            {
+                using (var reader = new StreamReader(stream))
+                {
+                    return reader.ReadToEnd();
+                }
+            }
+        }
+
+                public static char[,] ReadMap(int day, bool isTest = false)
         {
             List<string> lines = ReadLines(day, isTest).ToList();
             var map = new char[lines.Count, lines[0].Length];

@@ -294,3 +294,7 @@ from [here](https://github.com/jonathanpaulson/AdventOfCode/blob/master/2023/23.
 ### Part One:
 straightforward, although I kept making a bunch of dumb mistakes. Solve an equation with two unknowns of the form Ax = b, so the answer is x = A_inv * b.
 The determinant is used to calculate the inverse of A, if this is zero, the hailstone paths are parallel and will never cross.
+
+## Day 25
+
+Ran out of energy for this year. Cribbed the python solution from [here](https://www.reddit.com/r/adventofcode/comments/18qbsxs/comment/kews1k4/?utm_source=share&utm_medium=web3x&utm_name=web3xcss&utm_term=1&utm_content=share_button.
