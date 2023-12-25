@@ -14,6 +14,8 @@ namespace AdventOfCode2023.PuzzleSolver
             return Solve(test, isPartTwo: false);
         }
 
+        // I ended up running the solution from here:
+        // https://github.com/jonathanpaulson/AdventOfCode/blob/master/2023/23.py
         public string SolvePartTwo(bool test = false)
         {
             throw new NotImplementedException();

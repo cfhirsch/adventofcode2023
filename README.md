@@ -284,6 +284,11 @@ Straightforward. I implemented a variant of breadth first search, where the queu
 locations on the current path. The get neighbors method switches on whether the current tile is '^', '>' or '.'. If neighbor is not in the hashset of already visited tiles, 
 I enqueue a tuple consisting of that neighbor and a hashset that equals the previous hashset union the neighbor.
 
+### Part Two:
+From reading the forums, I tried collapsing the graph for part two walking as far as I could along corridors, but I couldn't get it to work. I threw in the towel and ran the solution
+from [here](https://github.com/jonathanpaulson/AdventOfCode/blob/master/2023/23.py).
+
+
 ## Day 24
 
 ### Part One:
